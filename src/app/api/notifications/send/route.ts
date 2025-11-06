@@ -1,3 +1,4 @@
+import type { Prisma } from '@prisma/client'
 import { nanoid } from 'nanoid'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
         templateId: validated.templateId,
         status: 'PENDING',
         priority: validated.priority,
-        payload: validated.payload,
+        payload: validated.payload as Prisma.JsonObject,
         idempotencyKey: validated.idempotencyKey,
         correlationId,
         retryCount: 0,

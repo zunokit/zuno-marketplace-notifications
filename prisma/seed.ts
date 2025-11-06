@@ -29,7 +29,7 @@ async function main() {
   console.log('✓ Created user:', user.email)
 
   // Create organization membership
-  const membership = await prisma.organizationMember.upsert({
+  await prisma.organizationMember.upsert({
     where: {
       organizationId_userId: {
         organizationId: org.id,
@@ -70,19 +70,20 @@ async function main() {
   })
   console.log('✓ Created template:', template.name)
 
-  // Create user preferences
-  const preference = await prisma.userPreference.upsert({
+  // Create user preferences for WELCOME notifications
+  await prisma.userPreference.upsert({
     where: {
       userId_channel_type: {
         userId: user.id,
         channel: 'EMAIL',
-        type: null,
+        type: 'WELCOME',
       },
     },
     update: {},
     create: {
       userId: user.id,
       channel: 'EMAIL',
+      type: 'WELCOME',
       enabled: true,
       frequency: 'REALTIME',
     },
@@ -90,7 +91,7 @@ async function main() {
   console.log('✓ Created user preferences')
 
   // Create rate limit config
-  const rateLimit = await prisma.rateLimitConfig.upsert({
+  await prisma.rateLimitConfig.upsert({
     where: {
       organizationId_channel: {
         organizationId: org.id,
