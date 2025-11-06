@@ -1,10 +1,8 @@
-import type { Prisma } from '@prisma/client'
-import { nanoid } from 'nanoid'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
+import { SendNotificationUseCase } from '@/core/use-cases/notifications/send-notification.use-case'
 import { logger } from '@/lib/logger/logger'
-import { prisma } from '@/infrastructure/database/prisma'
 
 const SendNotificationSchema = z.object({
   userId: z.string().uuid(),
@@ -17,56 +15,44 @@ const SendNotificationSchema = z.object({
   ]),
   channel: z.enum(['EMAIL', 'WEBSOCKET', 'PUSH', 'SMS']),
   templateId: z.string().uuid().optional(),
+  templateSlug: z.string().optional(),
   payload: z.record(z.unknown()),
   idempotencyKey: z.string().optional(),
   priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
+  scheduledAt: z.string().datetime().optional(),
 })
 
 export async function POST(request: NextRequest) {
   try {
-    // For now, use a default org ID until we implement authentication
+    // For now, use a default org ID until we implement full authentication
     const defaultOrgId = 'default-org-id'
-    const correlationId = nanoid()
 
     // Validate request body
     const body = await request.json()
     const validated = SendNotificationSchema.parse(body)
 
-    logger.info('Creating notification', {
-      correlationId,
+    // Execute use case
+    const useCase = new SendNotificationUseCase()
+    const notification = await useCase.execute({
+      organizationId: defaultOrgId,
+      userId: validated.userId,
       type: validated.type,
       channel: validated.channel,
-    })
-
-    // Create notification (basic version without outbox pattern for now)
-    const notification = await prisma.notification.create({
-      data: {
-        id: nanoid(),
-        organizationId: defaultOrgId,
-        userId: validated.userId,
-        type: validated.type,
-        channel: validated.channel,
-        templateId: validated.templateId,
-        status: 'PENDING',
-        priority: validated.priority,
-        payload: validated.payload as Prisma.JsonObject,
-        idempotencyKey: validated.idempotencyKey,
-        correlationId,
-        retryCount: 0,
-        maxRetries: 5,
-      },
-    })
-
-    logger.info('Notification created', {
-      correlationId,
-      notificationId: notification.id,
+      templateId: validated.templateId,
+      templateSlug: validated.templateSlug,
+      priority: validated.priority,
+      payload: validated.payload,
+      idempotencyKey: validated.idempotencyKey,
+      scheduledAt: validated.scheduledAt
+        ? new Date(validated.scheduledAt)
+        : undefined,
     })
 
     return NextResponse.json(
       {
         id: notification.id,
         status: notification.status,
-        correlationId,
+        correlationId: notification.correlationId,
       },
       { status: 201 }
     )
