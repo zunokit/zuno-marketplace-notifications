@@ -31,6 +31,10 @@ model Organization {
   rateLimitConfigs RateLimitConfig[]
   apiKeys          ApiKey[]
   webhooks         Webhook[]
+  priceAlerts      PriceAlert[]
+  watchlists       Watchlist[]
+  drops            Drop[]
+  whitelistEntries WhitelistEntry[]
 
   @@index([slug])
   @@index([isActive, deletedAt])
@@ -82,6 +86,11 @@ model User {
   auditLogs        AuditLog[]           @relation("AuditActor")
   accounts         Account[]
   sessions         Session[]
+
+  // NFT Marketplace Features
+  priceAlerts      PriceAlert[]
+  watchlists       Watchlist[]
+  whitelistEntries WhitelistEntry[]
 
   @@index([email])
   @@index([deletedAt])
@@ -206,6 +215,7 @@ enum NotificationType {
   LISTING_CREATED
   LISTING_SOLD
   LISTING_EXPIRED
+  LISTING_PRICE_CHANGED
 
   NFT_MINTED
   NFT_TRANSFERRED
@@ -213,6 +223,48 @@ enum NotificationType {
 
   COLLECTION_CREATED
   COLLECTION_VERIFIED
+
+  // Price & Floor Price Events
+  FLOOR_PRICE_DROP
+  PRICE_DROP_ALERT
+  PRICE_INCREASE_ALERT
+  TARGET_PRICE_REACHED
+
+  // Social/Following Events
+  USER_FOLLOWED
+  FOLLOWING_LISTED_NFT
+  FOLLOWING_BOUGHT_NFT
+  COLLECTION_FOLLOWED
+  ACTIVITY_ON_OWNED_NFT
+
+  // Rarity & Discovery
+  RARE_NFT_LISTED
+  TRAIT_MATCH_ALERT
+  SIMILAR_NFT_SOLD
+
+  // Drops & Minting
+  DROP_ANNOUNCED
+  DROP_STARTING_SOON
+  DROP_LIVE
+  DROP_ENDED
+  MINT_SUCCESS
+  MINT_FAILED
+  WHITELIST_APPROVED
+  WHITELIST_SPOT_AVAILABLE
+
+  // Revenue & Royalties
+  ROYALTY_RECEIVED
+  SALE_REVENUE_RECEIVED
+  PAYOUT_PROCESSED
+
+  // Analytics & Stats
+  WEEKLY_PORTFOLIO_STATS
+  MONTHLY_SUMMARY
+  PORTFOLIO_VALUE_CHANGE
+
+  // Gas & Optimization
+  LOW_GAS_ALERT
+  OPTIMAL_GAS_TIME
 
   // System notifications
   SYSTEM_MAINTENANCE
@@ -628,6 +680,111 @@ enum AuditResource {
   API_KEY
   ORGANIZATION
   USER
+}
+
+// ============================================================================
+// NFT MARKETPLACE FEATURES
+// ============================================================================
+
+/// Price alerts for NFTs and collections
+model PriceAlert {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  itemType       String   // "nft" or "collection"
+  itemId         String   // NFT ID or Collection ID
+  targetPrice    Decimal  @db.Decimal(20, 8)
+  condition      String   // "above", "below", "equals"
+  isActive       Boolean  @default(true)
+  triggered      Boolean  @default(false)
+  triggeredAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId, isActive])
+  @@index([itemType, itemId, isActive])
+  @@map("price_alerts")
+}
+
+/// Watchlist for tracking NFTs and collections
+model Watchlist {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  itemType       String   // "nft", "collection", or "user"
+  itemId         String   // NFT ID, Collection ID, or User ID
+  notes          String?
+
+  createdAt      DateTime @default(now())
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemType, itemId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([itemType, itemId])
+  @@map("watchlists")
+}
+
+/// NFT drop campaigns
+model Drop {
+  id             String   @id @default(uuid())
+  organizationId String
+  collectionId   String
+  name           String
+  description    String?
+  startTime      DateTime
+  endTime        DateTime?
+  totalSupply    Int?
+  pricePerNFT    Decimal? @db.Decimal(20, 8)
+  isWhitelistOnly Boolean @default(false)
+  status         String   // "announced", "live", "ended", "sold_out"
+  imageUrl       String?
+  mintUrl        String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  whitelistEntries WhitelistEntry[]
+
+  @@index([organizationId])
+  @@index([status, startTime])
+  @@index([collectionId])
+  @@map("drops")
+}
+
+/// Whitelist for drops
+model WhitelistEntry {
+  id             String   @id @default(uuid())
+  organizationId String
+  dropId         String
+  userId         String
+  spots          Int      @default(1)
+  isApproved     Boolean  @default(false)
+  hasNotified    Boolean  @default(false)
+
+  createdAt      DateTime @default(now())
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  drop           Drop     @relation(fields: [dropId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dropId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([dropId, isApproved])
+  @@map("whitelist_entries")
 }
 
 // ============================================================================
