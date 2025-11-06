@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid'
 
 import { EmailChannel } from '@/infrastructure/channels/email/email-channel'
+import { WebSocketProvider } from '@/infrastructure/channels/websocket/websocket-provider'
 import { OutboxRepository } from '@/infrastructure/outbox/outbox.repository'
 import { logger } from '@/lib/logger/logger'
 
@@ -8,12 +9,14 @@ export class OutboxWorker {
   private workerId: string
   private outboxRepo: OutboxRepository
   private emailChannel: EmailChannel
+  private websocketProvider: WebSocketProvider
   private isRunning: boolean = false
 
   constructor() {
     this.workerId = `worker-${nanoid(8)}`
     this.outboxRepo = new OutboxRepository()
     this.emailChannel = new EmailChannel()
+    this.websocketProvider = new WebSocketProvider()
   }
 
   async start(intervalMs: number = 5000) {
@@ -63,6 +66,8 @@ export class OutboxWorker {
         // Process based on channel
         if (outbox.channel === 'EMAIL') {
           await this.processEmail(outbox)
+        } else if (outbox.channel === 'WEBSOCKET') {
+          await this.processWebSocket(outbox)
         }
 
         // Mark as processed
@@ -99,6 +104,26 @@ export class OutboxWorker {
     }
 
     logger.info('Email sent successfully', {
+      outboxId: outbox.id,
+      messageId: result.messageId,
+    })
+  }
+
+  private async processWebSocket(outbox: any) {
+    const payload = outbox.payload as any
+
+    const result = await this.websocketProvider.send({
+      to: payload.to,
+      subject: payload.subject,
+      body: payload.body,
+      metadata: payload.metadata,
+    })
+
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to send WebSocket notification')
+    }
+
+    logger.info('WebSocket notification sent successfully', {
       outboxId: outbox.id,
       messageId: result.messageId,
     })

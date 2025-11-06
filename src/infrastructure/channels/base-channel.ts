@@ -3,6 +3,9 @@ export interface SendResult {
   messageId?: string
   error?: string
   metadata?: Record<string, unknown>
+  provider?: string
+  responseTimeMs?: number
+  retryable?: boolean
 }
 
 export interface ChannelPayload {

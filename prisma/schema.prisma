@@ -30,6 +30,7 @@ model Organization {
   templates        Template[]
   rateLimitConfigs RateLimitConfig[]
   apiKeys          ApiKey[]
+  webhooks         Webhook[]
 
   @@index([slug])
   @@index([isActive, deletedAt])
@@ -546,6 +547,30 @@ model ApiKey {
   @@index([organizationId, isActive])
   @@index([keyPrefix])
   @@map("api_keys")
+}
+
+/// Webhooks for external integrations
+model Webhook {
+  id             String   @id @default(uuid())
+  organizationId String
+  url            String
+  events         String[] // e.g., ["notification.sent", "notification.failed"]
+  secret         String   // For HMAC signature verification
+  description    String?
+  isActive       Boolean  @default(true)
+
+  // Usage tracking
+  lastTriggeredAt DateTime?
+  failureCount   Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+  @@map("webhooks")
 }
 
 // ============================================================================
