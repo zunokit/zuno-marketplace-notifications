@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PriceAlertService } from '@/core/services/price-alert.service'
 import { logger } from '@/lib/logger/logger'
+import { requireAuth, requireOrganizationMembership } from '@/lib/auth/api-auth'
 import { z } from 'zod'
 
 const createPriceAlertSchema = z.object({
-  userId: z.string(),
-  organizationId: z.string(),
   itemType: z.enum(['nft', 'collection']),
   itemId: z.string(),
   targetPrice: z.number().positive(),
@@ -14,15 +13,25 @@ const createPriceAlertSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // Authenticate user
+    const { userId } = requireAuth(request)
+
+    // Get user's organization
+    const { organizationId } = await requireOrganizationMembership(userId)
+
     const body = await request.json()
     const validatedData = createPriceAlertSchema.parse(body)
 
     const priceAlertService = new PriceAlertService()
-    const priceAlert = await priceAlertService.createPriceAlert(validatedData)
+    const priceAlert = await priceAlertService.createPriceAlert({
+      userId,
+      organizationId,
+      ...validatedData,
+    })
 
     logger.info('Price alert created', {
       priceAlertId: priceAlert.id,
-      userId: validatedData.userId,
+      userId,
       itemType: validatedData.itemType,
       itemId: validatedData.itemId,
     })
@@ -40,6 +49,26 @@ export async function POST(request: NextRequest) {
           details: error.errors,
         },
         { status: 400 }
+      )
+    }
+
+    if (error instanceof Error && error.message.startsWith('Unauthorized')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        { status: 401 }
+      )
+    }
+
+    if (error instanceof Error && error.message.startsWith('Forbidden')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: error.message,
+        },
+        { status: 403 }
       )
     }
 
