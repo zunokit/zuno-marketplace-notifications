@@ -26,10 +26,6 @@ zuno-marketplace-notifications/
 │       ├── bug_report.md
 │       └── feature_request.md
 │
-├── .husky/
-│   ├── pre-commit                    # Run lint-staged
-│   └── pre-push                      # Run typecheck + tests
-│
 ├── .vscode/
 │   ├── settings.json                 # Editor settings
 │   ├── extensions.json               # Recommended extensions

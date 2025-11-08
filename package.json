@@ -25,8 +25,7 @@
     "workers": "concurrently \"pnpm worker:outbox\" \"pnpm worker:retry\"",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f",
-    "prepare": "husky install"
+    "docker:logs": "docker-compose logs -f"
   },
   "dependencies": {
     "react": "^19.0.0",
@@ -86,21 +85,10 @@
     "eslint-config-prettier": "latest",
     "prettier": "latest",
     "prettier-plugin-tailwindcss": "latest",
-    "husky": "latest",
-    "lint-staged": "latest",
     "tsx": "latest",
     "concurrently": "latest"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
-  },
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
   }
 }

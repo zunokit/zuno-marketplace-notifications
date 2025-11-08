@@ -223,8 +223,6 @@ pnpm build
 git push origin feature/NOT-123-add-sms-channel
 ```
 
-**Git hook will enforce this** (see Husky pre-push).
-
 ### 5. Create Pull Request
 
 ```bash

@@ -138,8 +138,7 @@ pnpm add -D prettier@latest
 pnpm add -D prettier-plugin-tailwindcss@latest
 
 # Git Hooks
-pnpm add -D husky@latest
-pnpm add -D lint-staged@latest
+# Note: Git hooks are optional and can be configured manually if needed
 
 # Type Checking
 pnpm add -D typescript@latest
@@ -433,51 +432,8 @@ coverage
 
 ---
 
-## Step 8: Set Up Git Hooks (Husky)
+## Step 8: Set Up Docker Compose
 
-```bash
-# Initialize Husky
-pnpm exec husky init
-
-# Create pre-commit hook
-cat > .husky/pre-commit <<EOF
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-pnpm lint-staged
-EOF
-
-chmod +x .husky/pre-commit
-
-# Create pre-push hook
-cat > .husky/pre-push <<EOF
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-pnpm typecheck
-pnpm test --passWithNoTests
-EOF
-
-chmod +x .husky/pre-push
-```
-
-### Configure lint-staged
-
-Add to `package.json`:
-
-```json
-{
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md,yml,yaml}": [
-      "prettier --write"
-    ]
-  }
-}
-```
 
 ---
 
@@ -512,9 +468,7 @@ Update `package.json` scripts:
 
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
-    "docker:logs": "docker-compose logs -f",
-
-    "prepare": "husky install"
+    "docker:logs": "docker-compose logs -f"
   }
 }
 ```
@@ -692,7 +646,7 @@ git commit -m "chore: complete project setup
 - Initialize Next.js 16 with TypeScript
 - Configure Prisma with NeonDB
 - Set up shadcn/ui components
-- Configure ESLint, Prettier, Husky
+- Configure ESLint, Prettier
 - Add Docker Compose for local services
 - Create directory structure
 - Add custom scripts

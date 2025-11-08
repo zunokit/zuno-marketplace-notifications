@@ -52,7 +52,7 @@ A **complete, production-grade development plan** for building the Zuno Marketpl
    - Dependency installation with versions
    - TypeScript configuration (strict mode, path aliases)
    - ESLint & Prettier setup
-   - Git hooks (Husky) with pre-commit/pre-push
+   - Git hooks (optional, can be configured manually)
    - Docker Compose configuration
    - shadcn/ui initialization
    - Environment configuration with Zod validation
