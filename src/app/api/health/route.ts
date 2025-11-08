@@ -4,7 +4,7 @@ import { prisma } from '@/infrastructure/database/prisma'
 
 export async function GET() {
   try {
-    // Check database
+    // Check database connection
     await prisma.$queryRaw`SELECT 1`
 
     return NextResponse.json({

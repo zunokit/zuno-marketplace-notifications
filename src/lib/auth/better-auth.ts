@@ -11,6 +11,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    requireEmailVerification: false, // For development
   },
   session: {
     cookieCache: {
@@ -22,13 +23,14 @@ export const auth = betterAuth({
     admin(),
     organization({
       async sendInvitationEmail(data) {
-        // TODO: Implement invitation email using notification system
+        // TODO: Implement invitation email in Phase 2
         console.log('Invitation email:', data)
       },
     }),
   ],
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  trustedOrigins: ['http://localhost:3000'],
 })
 
 export type Session = typeof auth.$Infer.Session.session

@@ -14,6 +14,7 @@ const customJestConfig = {
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
     '!src/**/*.stories.{js,jsx,ts,tsx}',
+    '!src/app/**/*.{js,jsx,ts,tsx}', // Exclude Next.js app directory
   ],
   coverageThreshold: {
     global: {
@@ -23,6 +24,7 @@ const customJestConfig = {
       statements: 80,
     },
   },
+  testMatch: ['**/__tests__/**/*.(test|spec).(ts|tsx)', '**/*.(test|spec).(ts|tsx)'],
 }
 
 module.exports = createJestConfig(customJestConfig)

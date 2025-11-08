@@ -6,13 +6,13 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(32),
   BETTER_AUTH_URL: z.string().url(),
   RESEND_API_KEY: z.string().startsWith('re_'),
-  MAILPIT_SMTP_HOST: z.string().default('localhost'),
-  MAILPIT_SMTP_PORT: z.coerce.number().default(1025),
-  REDIS_URL: z.string().url().default('redis://localhost:6379'),
+  REDIS_URL: z.string().url(),
   PORT: z.coerce.number().default(3000),
   LOG_LEVEL: z
     .enum(['debug', 'info', 'warn', 'error'])
     .default('info'),
+  MAILPIT_SMTP_HOST: z.string().default('localhost'),
+  MAILPIT_SMTP_PORT: z.coerce.number().default(1025),
   ENABLE_WEBSOCKET: z
     .string()
     .transform((val) => val === 'true')
@@ -29,4 +29,18 @@ const envSchema = z.object({
 
 export type Env = z.infer<typeof envSchema>
 
-export const env = envSchema.parse(process.env)
+function validateEnv(): Env {
+  try {
+    return envSchema.parse(process.env)
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const missingVars = error.errors
+        .map((e) => `${e.path.join('.')}: ${e.message}`)
+        .join('\n')
+      throw new Error(`❌ Invalid environment variables:\n${missingVars}`)
+    }
+    throw error
+  }
+}
+
+export const env = validateEnv()

@@ -8,14 +8,14 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'Zuno Marketplace Notifications',
   description:
-    'Enterprise-grade, multi-channel notification service for the Zuno NFT Marketplace ecosystem',
+    'Enterprise-grade multi-channel notification service for Zuno NFT Marketplace',
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en">
       <body className={inter.className}>{children}</body>

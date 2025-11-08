@@ -1,11 +1,8 @@
-import { Channel, NotificationType, Priority } from '@prisma/client'
+import type { Channel, NotificationType, Priority } from '@prisma/client'
 import { nanoid } from 'nanoid'
 
-import { Notification } from '@/core/domain/entities/notification.entity'
-import {
-  NotificationRepository,
-  CreateNotificationDto,
-} from '@/infrastructure/repositories/notification.repository'
+import { OutboxRepository } from '@/infrastructure/outbox/outbox.repository'
+import { TemplateService } from '@/infrastructure/templates/template.service'
 import { logger } from '@/lib/logger/logger'
 
 export interface SendNotificationInput {
@@ -14,91 +11,90 @@ export interface SendNotificationInput {
   type: NotificationType
   channel: Channel
   templateId?: string
+  templateSlug?: string
   priority?: Priority
   payload: Record<string, unknown>
   idempotencyKey?: string
-  metadata?: Record<string, unknown>
-}
-
-export interface SendNotificationOutput {
-  notificationId: string
-  status: string
-  correlationId: string
+  scheduledAt?: Date
 }
 
 export class SendNotificationUseCase {
-  constructor(private notificationRepository: NotificationRepository) {}
+  private outboxRepo: OutboxRepository
+  private templateService: TemplateService
 
-  async execute(
-    input: SendNotificationInput
-  ): Promise<SendNotificationOutput> {
+  constructor() {
+    this.outboxRepo = new OutboxRepository()
+    this.templateService = new TemplateService()
+  }
+
+  async execute(input: SendNotificationInput) {
     const correlationId = nanoid()
 
-    try {
-      logger.info('SendNotificationUseCase: Starting', {
-        correlationId,
-        type: input.type,
-        channel: input.channel,
-      })
+    logger.info('Sending notification', {
+      correlationId,
+      type: input.type,
+      channel: input.channel,
+    })
 
-      // Check for duplicate using idempotency key
-      if (input.idempotencyKey) {
-        const existing = await this.notificationRepository.findByIdempotencyKey(
-          input.idempotencyKey
-        )
-        if (existing) {
-          logger.info('SendNotificationUseCase: Duplicate detected', {
-            correlationId,
-            existingId: existing.id,
-          })
-          return {
-            notificationId: existing.id,
-            status: existing.status,
-            correlationId,
-          }
+    // Render template if provided
+    let emailPayload = input.payload
+    if (input.templateId || input.templateSlug) {
+      try {
+        const rendered = input.templateId
+          ? await this.templateService.renderTemplate(input.templateId, input.payload)
+          : await this.templateService.renderTemplateBySlug(input.templateSlug!, input.payload)
+
+        emailPayload = {
+          ...input.payload,
+          subject: rendered.subject,
+          body: rendered.body,
         }
+      } catch (error) {
+        logger.error('Template rendering failed', {
+          error: error instanceof Error ? error.message : 'Unknown error',
+          correlationId,
+        })
+        throw error
       }
+    }
 
-      // Create notification
-      const notificationData: CreateNotificationDto = {
+    // Create notification with outbox (transactional)
+    const result = await this.outboxRepo.createWithNotification(
+      {
         id: nanoid(),
-        organizationId: input.organizationId,
-        userId: input.userId,
+        organization: {
+          connect: { id: input.organizationId },
+        },
+        user: {
+          connect: { id: input.userId },
+        },
         type: input.type,
         channel: input.channel,
-        templateId: input.templateId,
+        template: input.templateId
+          ? { connect: { id: input.templateId } }
+          : undefined,
         status: 'PENDING',
         priority: input.priority || 'NORMAL',
-        payload: input.payload,
+        payload: emailPayload as any,
         idempotencyKey: input.idempotencyKey,
         correlationId,
-        metadata: input.metadata,
         retryCount: 0,
         maxRetries: 5,
+        scheduledAt: input.scheduledAt,
+      },
+      {
+        channel: input.channel,
+        payload: emailPayload as any,
+        scheduledAt: input.scheduledAt || new Date(),
       }
+    )
 
-      const notification = await this.notificationRepository.create(
-        notificationData
-      )
+    logger.info('Notification created with outbox', {
+      correlationId,
+      notificationId: result.notification.id,
+      outboxId: result.outbox.id,
+    })
 
-      logger.info('SendNotificationUseCase: Notification created', {
-        correlationId,
-        notificationId: notification.id,
-      })
-
-      // TODO: Add to outbox for processing (Phase 2)
-
-      return {
-        notificationId: notification.id,
-        status: notification.status,
-        correlationId,
-      }
-    } catch (error) {
-      logger.error('SendNotificationUseCase: Error', {
-        correlationId,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      })
-      throw error
-    }
+    return result.notification
   }
 }

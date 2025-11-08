@@ -1,146 +1,149 @@
-import { Outbox, OutboxStatus, Channel } from '@prisma/client'
+import type { Prisma } from '@prisma/client'
 
 import { prisma } from '@/infrastructure/database/prisma'
-
-export interface CreateOutboxDto {
-  id: string
-  notificationId: string
-  channel: Channel
-  payload: Record<string, unknown>
-  status: OutboxStatus
-  scheduledAt: Date
-}
-
-export interface UpdateOutboxDto {
-  status?: OutboxStatus
-  processingAt?: Date
-  processedAt?: Date
-  lockedAt?: Date
-  lockedBy?: string
-  retryCount?: number
-  lastError?: string
-  nextRetryAt?: Date
-}
+import { logger } from '@/lib/logger/logger'
 
 export class OutboxRepository {
-  async create(data: CreateOutboxDto): Promise<Outbox> {
-    return prisma.outbox.create({
-      data,
+  async createWithNotification(
+    notificationData: Prisma.NotificationCreateInput,
+    outboxData: Omit<Prisma.OutboxCreateInput, 'notification'>
+  ) {
+    return await prisma.$transaction(async (tx) => {
+      // Create notification
+      const notification = await tx.notification.create({
+        data: notificationData,
+      })
+
+      // Create outbox entry
+      const outbox = await tx.outbox.create({
+        data: {
+          channel: outboxData.channel,
+          payload: outboxData.payload,
+          scheduledAt: outboxData.scheduledAt,
+          notification: {
+            connect: { id: notification.id },
+          },
+        },
+      })
+
+      logger.info('Created notification with outbox', {
+        notificationId: notification.id,
+        outboxId: outbox.id,
+      })
+
+      return { notification, outbox }
     })
   }
 
-  async findById(id: string): Promise<Outbox | null> {
-    return prisma.outbox.findUnique({
-      where: { id },
-      include: {
-        notification: true,
-      },
-    })
-  }
-
-  async findPendingMessages(
-    limit: number = 100,
-    workerId: string
-  ): Promise<Outbox[]> {
-    // Use FOR UPDATE SKIP LOCKED pattern for distributed workers
-    return prisma.$queryRaw`
-      UPDATE outbox
-      SET
-        status = 'PROCESSING'::outbox_status,
-        "lockedAt" = NOW(),
-        "lockedBy" = ${workerId},
-        "processingAt" = NOW()
-      WHERE id IN (
-        SELECT id FROM outbox
-        WHERE status = 'PENDING'::outbox_status
-          AND "scheduledAt" <= NOW()
-        ORDER BY "createdAt" ASC
-        LIMIT ${limit}
-        FOR UPDATE SKIP LOCKED
-      )
-      RETURNING *
-    `
-  }
-
-  async findFailedForRetry(limit: number = 100): Promise<Outbox[]> {
-    return prisma.outbox.findMany({
+  async getPending(limit: number = 100) {
+    return await prisma.outbox.findMany({
       where: {
-        status: 'FAILED',
-        nextRetryAt: {
+        status: 'PENDING',
+        scheduledAt: {
           lte: new Date(),
         },
-        retryCount: {
-          lt: 5, // Max retries
-        },
+        OR: [
+          { lockedAt: null },
+          {
+            lockedAt: {
+              lt: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes timeout
+            },
+          },
+        ],
       },
-      take: limit,
-      orderBy: { nextRetryAt: 'asc' },
       include: {
         notification: true,
       },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      take: limit,
     })
   }
 
-  async update(id: string, data: UpdateOutboxDto): Promise<Outbox> {
-    return prisma.outbox.update({
-      where: { id },
-      data,
+  async lock(outboxId: string, workerId: string) {
+    return await prisma.outbox.update({
+      where: { id: outboxId },
+      data: {
+        status: 'PROCESSING',
+        lockedAt: new Date(),
+        lockedBy: workerId,
+        processingAt: new Date(),
+      },
     })
   }
 
-  async markAsProcessed(id: string): Promise<Outbox> {
-    return this.update(id, {
-      status: 'PROCESSED',
-      processedAt: new Date(),
+  async markProcessed(outboxId: string) {
+    return await prisma.outbox.update({
+      where: { id: outboxId },
+      data: {
+        status: 'PROCESSED',
+        processedAt: new Date(),
+        lockedAt: null,
+        lockedBy: null,
+      },
     })
   }
 
-  async markAsFailed(
-    id: string,
-    error: string,
-    nextRetryAt?: Date
-  ): Promise<Outbox> {
-    const outbox = await this.findById(id)
-    if (!outbox) {
-      throw new Error(`Outbox message ${id} not found`)
-    }
-
-    return this.update(id, {
-      status: 'FAILED',
-      lastError: error,
-      retryCount: outbox.retryCount + 1,
-      nextRetryAt,
+  async markFailed(outboxId: string, error: string) {
+    const outbox = await prisma.outbox.findUnique({
+      where: { id: outboxId },
     })
-  }
 
-  async moveToDeadLetter(id: string): Promise<void> {
-    const outbox = await this.findById(id)
-    if (!outbox) {
-      throw new Error(`Outbox message ${id} not found`)
-    }
+    if (!outbox) throw new Error('Outbox not found')
 
-    await prisma.$transaction([
-      // Create dead letter entry
-      prisma.deadLetterQueue.create({
+    const retryCount = outbox.retryCount + 1
+    const maxRetries = 5
+
+    if (retryCount >= maxRetries) {
+      // Move to dead letter queue
+      await prisma.$transaction(async (tx) => {
+        await tx.deadLetterQueue.create({
+          data: {
+            notificationId: outbox.notificationId,
+            channel: outbox.channel,
+            payload: outbox.payload as any,
+            error,
+            retryCount,
+          },
+        })
+
+        await tx.outbox.update({
+          where: { id: outboxId },
+          data: {
+            status: 'DEAD_LETTER',
+            lastError: error,
+            processedAt: new Date(),
+          },
+        })
+      })
+
+      logger.warn('Outbox moved to dead letter queue', {
+        outboxId,
+        retryCount,
+      })
+    } else {
+      // Retry with exponential backoff
+      const backoffSeconds = Math.pow(2, retryCount) * 60 // 2, 4, 8, 16, 32 minutes
+      const nextRetryAt = new Date(Date.now() + backoffSeconds * 1000)
+
+      await prisma.outbox.update({
+        where: { id: outboxId },
         data: {
-          notificationId: outbox.notificationId,
-          channel: outbox.channel,
-          payload: outbox.payload,
-          error: outbox.lastError || 'Max retries exceeded',
-          retryCount: outbox.retryCount,
+          status: 'FAILED',
+          lastError: error,
+          retryCount,
+          nextRetryAt,
+          lockedAt: null,
+          lockedBy: null,
         },
-      }),
-      // Mark outbox as dead letter
-      prisma.outbox.update({
-        where: { id },
-        data: { status: 'DEAD_LETTER' },
-      }),
-    ])
-  }
+      })
 
-  async countByStatus(status: OutboxStatus): Promise<number> {
-    return prisma.outbox.count({
-      where: { status },
-    })
+      logger.info('Outbox scheduled for retry', {
+        outboxId,
+        retryCount,
+        nextRetryAt,
+      })
+    }
   }
 }

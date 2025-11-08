@@ -1,6 +1,5 @@
-import {
+import type {
   Channel,
-  ErrorCategory,
   NotificationStatus,
   NotificationType,
   Priority,
@@ -29,7 +28,6 @@ export interface NotificationProps {
   retryCount: number
   maxRetries: number
   lastError?: string
-  errorCategory?: ErrorCategory
 }
 
 export class Notification extends BaseEntity<string> {
@@ -73,6 +71,14 @@ export class Notification extends BaseEntity<string> {
     return this.props.maxRetries
   }
 
+  get priority(): Priority {
+    return this.props.priority
+  }
+
+  get idempotencyKey(): string | undefined {
+    return this.props.idempotencyKey
+  }
+
   get correlationId(): string | undefined {
     return this.props.correlationId
   }
@@ -88,11 +94,10 @@ export class Notification extends BaseEntity<string> {
     this.touch()
   }
 
-  markAsFailed(error: string, category?: ErrorCategory): void {
+  markAsFailed(error: string): void {
     this.props.status = 'FAILED'
     this.props.failedAt = new Date()
     this.props.lastError = error
-    this.props.errorCategory = category
     this.props.retryCount += 1
     this.touch()
   }
@@ -103,8 +108,8 @@ export class Notification extends BaseEntity<string> {
     this.touch()
   }
 
-  markAsProcessing(): void {
-    this.props.status = 'PROCESSING'
+  markAsCancelled(): void {
+    this.props.status = 'CANCELLED'
     this.touch()
   }
 
@@ -122,5 +127,10 @@ export class Notification extends BaseEntity<string> {
       createdAt: new Date(),
       updatedAt: new Date(),
     })
+  }
+
+  // Convert to plain object
+  toObject(): NotificationProps {
+    return { ...this.props }
   }
 }

@@ -78,7 +78,13 @@ class RedisClient {
     options?: { EX?: number; PX?: number }
   ): Promise<void> {
     const client = this.getClient()
-    await client.set(key, value, options)
+    if (options?.EX) {
+      await client.set(key, value, { EX: options.EX })
+    } else if (options?.PX) {
+      await client.set(key, value, { PX: options.PX })
+    } else {
+      await client.set(key, value)
+    }
   }
 
   async del(key: string): Promise<void> {

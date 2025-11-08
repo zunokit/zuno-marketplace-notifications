@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { nanoid } from 'nanoid'
 import { z } from 'zod'
 
-import { prisma } from '@/infrastructure/database/prisma'
+import { SendNotificationUseCase } from '@/core/use-cases/notifications/send-notification.use-case'
 import { logger } from '@/lib/logger/logger'
 
 const SendNotificationSchema = z.object({
@@ -11,61 +10,64 @@ const SendNotificationSchema = z.object({
     'WELCOME',
     'AUCTION_WON',
     'BID_PLACED',
-    'AUCTION_STARTED',
-    'AUCTION_ENDING_SOON',
+    'EMAIL_VERIFICATION',
+    'CUSTOM',
   ]),
-  channel: z.enum(['EMAIL', 'WEBSOCKET']),
+  channel: z.enum(['EMAIL', 'WEBSOCKET', 'PUSH', 'SMS']),
   templateId: z.string().uuid().optional(),
+  templateSlug: z.string().optional(),
   payload: z.record(z.unknown()),
   idempotencyKey: z.string().optional(),
+  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
+  scheduledAt: z.string().datetime().optional(),
 })
 
 export async function POST(request: NextRequest) {
   try {
-    // 1. Generate correlation ID for tracing
-    const correlationId = nanoid()
+    // For now, use a default org ID until we implement full authentication
+    const defaultOrgId = 'default-org-id'
 
-    // 2. Validate request
+    // Validate request body
     const body = await request.json()
     const validated = SendNotificationSchema.parse(body)
 
-    logger.info('Creating notification', {
-      correlationId,
+    // Execute use case
+    const useCase = new SendNotificationUseCase()
+    const notification = await useCase.execute({
+      organizationId: defaultOrgId,
+      userId: validated.userId,
       type: validated.type,
+      channel: validated.channel,
+      templateId: validated.templateId,
+      templateSlug: validated.templateSlug,
+      priority: validated.priority,
+      payload: validated.payload,
+      idempotencyKey: validated.idempotencyKey,
+      scheduledAt: validated.scheduledAt
+        ? new Date(validated.scheduledAt)
+        : undefined,
     })
 
-    // 3. Create notification (basic version without auth for now)
-    // TODO: Add authentication in Phase 1 completion
-    const notification = await prisma.notification.create({
-      data: {
-        id: nanoid(),
-        organizationId: '00000000-0000-0000-0000-000000000000', // Placeholder
-        userId: validated.userId,
-        type: validated.type,
-        channel: validated.channel,
-        templateId: validated.templateId,
-        status: 'PENDING',
-        priority: 'NORMAL',
-        payload: validated.payload,
-        idempotencyKey: validated.idempotencyKey,
-        correlationId,
-        retryCount: 0,
-        maxRetries: 5,
+    return NextResponse.json(
+      {
+        id: notification.id,
+        status: notification.status,
+        correlationId: notification.correlationId,
       },
-    })
-
-    logger.info('Notification created', {
-      correlationId,
-      notificationId: notification.id,
-    })
-
-    return NextResponse.json({ id: notification.id }, { status: 201 })
+      { status: 201 }
+    )
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ errors: error.errors }, { status: 400 })
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      )
     }
 
-    logger.error('Error creating notification', { error })
+    logger.error('Error creating notification', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  console.log('Seeding database...')
+  console.log('🌱 Seeding database...')
 
   // Create test organization
   const org = await prisma.organization.upsert({
@@ -15,7 +15,7 @@ async function main() {
       isActive: true,
     },
   })
-  console.log('Created organization:', org.name)
+  console.log('✓ Created organization:', org.name)
 
   // Create test user
   const user = await prisma.user.upsert({
@@ -26,10 +26,10 @@ async function main() {
       name: 'Admin User',
     },
   })
-  console.log('Created user:', user.email)
+  console.log('✓ Created user:', user.email)
 
-  // Create membership
-  const membership = await prisma.organizationMember.upsert({
+  // Create organization membership
+  await prisma.organizationMember.upsert({
     where: {
       organizationId_userId: {
         organizationId: org.id,
@@ -43,7 +43,7 @@ async function main() {
       role: 'OWNER',
     },
   })
-  console.log('Created organization membership:', membership.id)
+  console.log('✓ Created organization membership')
 
   // Create test template
   const template = await prisma.template.upsert({
@@ -62,34 +62,33 @@ async function main() {
       channel: 'EMAIL',
       type: 'WELCOME',
       subject: 'Welcome to {{organizationName}}!',
-      body: '<h1>Welcome {{userName}}!</h1><p>We\'re excited to have you.</p>',
+      body: "<h1>Welcome {{userName}}!</h1><p>We're excited to have you.</p>",
       variables: ['organizationName', 'userName'],
       createdBy: user.id,
       isActive: true,
     },
   })
-  console.log('Created template:', template.name)
+  console.log('✓ Created template:', template.name)
 
-  // Create user preferences
-  const existingPref = await prisma.userPreference.findFirst({
+  // Create user preferences for WELCOME notifications
+  await prisma.userPreference.upsert({
     where: {
-      userId: user.id,
-      channel: 'EMAIL',
-      type: null,
-    },
-  })
-
-  if (!existingPref) {
-    await prisma.userPreference.create({
-      data: {
+      userId_channel_type: {
         userId: user.id,
         channel: 'EMAIL',
-        enabled: true,
-        frequency: 'REALTIME',
+        type: 'WELCOME',
       },
-    })
-  }
-  console.log('Created user preferences')
+    },
+    update: {},
+    create: {
+      userId: user.id,
+      channel: 'EMAIL',
+      type: 'WELCOME',
+      enabled: true,
+      frequency: 'REALTIME',
+    },
+  })
+  console.log('✓ Created user preferences')
 
   // Create rate limit config
   await prisma.rateLimitConfig.upsert({
@@ -109,14 +108,14 @@ async function main() {
       isActive: true,
     },
   })
-  console.log('Created rate limit config')
+  console.log('✓ Created rate limit config')
 
-  console.log('Seed completed successfully!')
+  console.log('✨ Seed completed successfully!')
 }
 
 main()
   .catch((e) => {
-    console.error('Seed error:', e)
+    console.error('❌ Seed error:', e)
     process.exit(1)
   })
   .finally(async () => {
