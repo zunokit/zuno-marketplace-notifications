@@ -43,7 +43,7 @@ async function main() {
       role: 'OWNER',
     },
   })
-  console.log('Created organization membership')
+  console.log('Created organization membership:', membership.id)
 
   // Create test template
   const template = await prisma.template.upsert({
@@ -71,22 +71,24 @@ async function main() {
   console.log('Created template:', template.name)
 
   // Create user preferences
-  await prisma.userPreference.upsert({
+  const existingPref = await prisma.userPreference.findFirst({
     where: {
-      userId_channel_type: {
-        userId: user.id,
-        channel: 'EMAIL',
-        type: null,
-      },
-    },
-    update: {},
-    create: {
       userId: user.id,
       channel: 'EMAIL',
-      enabled: true,
-      frequency: 'REALTIME',
+      type: null,
     },
   })
+
+  if (!existingPref) {
+    await prisma.userPreference.create({
+      data: {
+        userId: user.id,
+        channel: 'EMAIL',
+        enabled: true,
+        frequency: 'REALTIME',
+      },
+    })
+  }
   console.log('Created user preferences')
 
   // Create rate limit config

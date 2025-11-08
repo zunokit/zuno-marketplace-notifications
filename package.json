@@ -63,6 +63,7 @@
     "handlebars": "latest",
     "dotenv": "latest",
     "tailwindcss": "latest",
+    "tailwindcss-animate": "latest",
     "autoprefixer": "latest",
     "postcss": "latest"
   },
