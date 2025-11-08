@@ -6,10 +6,11 @@ export class Email {
   }
 
   static create(email: string): Email {
-    if (!Email.isValid(email)) {
-      throw new Error(`Invalid email: ${email}`)
+    const trimmed = email.trim()
+    if (!Email.isValid(trimmed)) {
+      throw new Error(`Invalid email: ${trimmed}`)
     }
-    return new Email(email.toLowerCase().trim())
+    return new Email(trimmed.toLowerCase())
   }
 
   static isValid(email: string): boolean {
