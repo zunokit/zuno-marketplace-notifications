@@ -57,7 +57,7 @@ export class ResendProvider {
         success: true,
         providerMessageId: response.data?.id,
         responseCode: 200,
-        responseBody: response.data as Record<string, unknown>,
+        responseBody: response.data as unknown as Record<string, unknown>,
         duration,
       }
     } catch (error) {

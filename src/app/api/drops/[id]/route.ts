@@ -4,10 +4,10 @@ import { logger } from '@/lib/logger/logger'
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const drop = await prisma.drop.findUnique({
       where: { id },

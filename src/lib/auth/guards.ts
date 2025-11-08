@@ -9,7 +9,7 @@ export async function requireAuth() {
   })
 
   if (!session) {
-    redirect('/auth/login')
+    redirect('/auth/login' as any)
   }
 
   return session

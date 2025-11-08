@@ -4,10 +4,10 @@ import { logger } from '@/lib/logger/logger'
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     // Deactivate the price alert instead of deleting
     const priceAlert = await prisma.priceAlert.update({
@@ -43,10 +43,10 @@ export async function DELETE(
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const priceAlert = await prisma.priceAlert.findUnique({
       where: { id },

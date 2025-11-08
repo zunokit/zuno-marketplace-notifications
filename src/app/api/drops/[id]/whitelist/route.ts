@@ -18,10 +18,10 @@ const approveWhitelistSchema = z.object({
 // Add user to whitelist
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: dropId } = params
+    const { id: dropId } = await params
     const body = await request.json()
     const validatedData = addToWhitelistSchema.parse(body)
 
@@ -118,10 +118,10 @@ export async function POST(
 // Approve whitelist entry
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: dropId } = params
+    const { id: dropId } = await params
     const body = await request.json()
     const validatedData = approveWhitelistSchema.parse(body)
 
@@ -203,10 +203,10 @@ export async function PATCH(
 // Get whitelist for drop
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: dropId } = params
+    const { id: dropId } = await params
 
     const whitelist = await prisma.whitelistEntry.findMany({
       where: { dropId },
