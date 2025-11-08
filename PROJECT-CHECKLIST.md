@@ -74,8 +74,7 @@
 - [ ] Install all dependencies
 - [ ] Configure TypeScript (strict mode)
 - [ ] Set up ESLint & Prettier
-- [ ] Configure Git hooks (Husky)
-- [ ] **Commit**: "chore: configure TypeScript, ESLint, Prettier, Husky"
+- [ ] **Commit**: "chore: configure TypeScript, ESLint, Prettier"
 
 #### Day 2-3: Database Setup
 - [ ] Create NeonDB project

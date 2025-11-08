@@ -10,6 +10,7 @@
 ## Overview
 
 Phase 1 establishes the foundation for the notification service:
+
 - Project setup and configuration
 - Database schema and migrations
 - Authentication with Better-Auth
@@ -44,6 +45,7 @@ git commit -m "chore: initialize Next.js project"
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Next.js 16 running on port 3000
 - [ ] TypeScript configured
 - [ ] Tailwind CSS working
@@ -56,12 +58,13 @@ git commit -m "chore: initialize Next.js project"
 pnpm add @prisma/client better-auth @tanstack/react-query zod resend ws redis date-fns nanoid bcrypt handlebars winston
 
 # Development dependencies
-pnpm add -D prisma @types/node @types/react @types/ws @types/bcrypt jest @testing-library/react @testing-library/jest-dom eslint-config-prettier prettier husky lint-staged
+pnpm add -D prisma @types/node @types/react @types/ws @types/bcrypt jest @testing-library/react @testing-library/jest-dom eslint-config-prettier prettier
 
 # Install all dependencies from 04-PROJECT-SETUP.md
 ```
 
 **Acceptance Criteria**:
+
 - [ ] All dependencies installed
 - [ ] No peer dependency warnings
 - [ ] `pnpm build` succeeds
@@ -100,6 +103,7 @@ Create/update `tsconfig.json`:
 ```
 
 **Acceptance Criteria**:
+
 - [ ] `pnpm typecheck` passes
 - [ ] Path aliases work
 - [ ] Strict mode enabled
@@ -112,13 +116,23 @@ Create `.eslintrc.json`:
 {
   "extends": ["next/core-web-vitals", "prettier"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "import/order": [
       "error",
       {
-        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+        "groups": [
+          "builtin",
+          "external",
+          "internal",
+          "parent",
+          "sibling",
+          "index"
+        ],
         "newlines-between": "always",
         "alphabetize": { "order": "asc" }
       }
@@ -141,58 +155,28 @@ Create `.prettierrc`:
 ```
 
 **Acceptance Criteria**:
+
 - [ ] `pnpm lint` passes
 - [ ] `pnpm format` works
 - [ ] Import ordering enforced
 
-#### Task 1.5: Set Up Git Hooks
+#### Task 1.5: Set Up Git Hooks (Optional)
+
+Git hooks are optional and can be configured manually if needed. You can run quality checks manually before committing:
 
 ```bash
-# Initialize Husky
-pnpm exec husky init
-
-# Create pre-commit hook
-cat > .husky/pre-commit <<'EOF'
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
-pnpm lint-staged
-EOF
-
-chmod +x .husky/pre-commit
-
-# Create pre-push hook
-cat > .husky/pre-push <<'EOF'
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 pnpm typecheck
+pnpm lint
 pnpm test --passWithNoTests
-EOF
-
-chmod +x .husky/pre-push
-```
-
-Add to `package.json`:
-
-```json
-{
-  "lint-staged": {
-    "*.{js,jsx,ts,tsx}": ["eslint --fix", "prettier --write"],
-    "*.{json,md,yml,yaml}": ["prettier --write"]
-  }
-}
 ```
 
 **Acceptance Criteria**:
-- [ ] Pre-commit hook runs lint-staged
-- [ ] Pre-push hook runs typecheck + tests
-- [ ] Hooks can be bypassed with `--no-verify` if needed
 
 **Commit**:
+
 ```bash
 git add .
-git commit -m "chore: configure TypeScript, ESLint, Prettier, Husky"
+git commit -m "chore: configure TypeScript, ESLint, Prettier"
 ```
 
 ---
@@ -206,6 +190,7 @@ git commit -m "chore: configure TypeScript, ESLint, Prettier, Husky"
 3. Copy connection string
 
 **Acceptance Criteria**:
+
 - [ ] NeonDB project created
 - [ ] Connection string copied
 
@@ -221,6 +206,7 @@ pnpm prisma init
 ```
 
 **Acceptance Criteria**:
+
 - [ ] `prisma/schema.prisma` exists
 - [ ] `.env` file created
 
@@ -260,6 +246,7 @@ ENABLE_SMS="false"
 Create `.env.example` (same content, but with placeholders).
 
 **Acceptance Criteria**:
+
 - [ ] `.env.local` configured
 - [ ] `.env.example` created
 - [ ] `.env*` in `.gitignore`
@@ -288,6 +275,7 @@ export const env = envSchema.parse(process.env)
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Environment validation works
 - [ ] Missing vars throw clear errors
 - [ ] Type-safe env access
@@ -297,6 +285,7 @@ export const env = envSchema.parse(process.env)
 Copy the complete Prisma schema from [docs/03-DATABASE-SCHEMA.md](./03-DATABASE-SCHEMA.md) into `prisma/schema.prisma`.
 
 Key models to include:
+
 - Organization
 - OrganizationMember
 - User
@@ -313,6 +302,7 @@ Key models to include:
 - DailyStats
 
 **Acceptance Criteria**:
+
 - [ ] Schema matches documentation
 - [ ] All enums defined
 - [ ] Indexes added
@@ -332,6 +322,7 @@ pnpm prisma db push
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Migration created successfully
 - [ ] Database tables created
 - [ ] Prisma client generated
@@ -358,11 +349,13 @@ if (process.env.NODE_ENV !== 'production') {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Single Prisma instance per app
 - [ ] Works in development (hot reload)
 - [ ] Works in production
 
 **Commit**:
+
 ```bash
 git add .
 git commit -m "feat(db): add Prisma schema and initialize database
@@ -393,11 +386,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: notifications_dev
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -406,11 +399,11 @@ services:
     image: redis:7-alpine
     container_name: notifications-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 3s
       retries: 5
@@ -419,8 +412,8 @@ services:
     image: axllent/mailpit:latest
     container_name: notifications-mailpit
     ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
+      - '1025:1025' # SMTP
+      - '8025:8025' # Web UI
     environment:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
@@ -444,6 +437,7 @@ Add scripts to `package.json`:
 ```
 
 **Acceptance Criteria**:
+
 - [ ] `pnpm docker:up` starts all services
 - [ ] PostgreSQL accessible on port 5432
 - [ ] Redis accessible on port 6379
@@ -501,7 +495,7 @@ async function main() {
       channel: 'EMAIL',
       type: 'WELCOME',
       subject: 'Welcome to {{organizationName}}!',
-      body: '<h1>Welcome {{userName}}!</h1><p>We\'re excited to have you.</p>',
+      body: "<h1>Welcome {{userName}}!</h1><p>We're excited to have you.</p>",
       variables: ['organizationName', 'userName'],
       createdBy: user.id,
       isActive: true,
@@ -556,6 +550,7 @@ pnpm db:seed
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Seed script runs without errors
 - [ ] Test organization created
 - [ ] Test user created
@@ -563,6 +558,7 @@ pnpm db:seed
 - [ ] Verify in Prisma Studio
 
 **Commit**:
+
 ```bash
 git add .
 git commit -m "feat(docker): add Docker Compose for local development
@@ -590,6 +586,7 @@ mkdir -p tests/{unit,integration,e2e,fixtures,mocks}
 ```
 
 **Acceptance Criteria**:
+
 - [ ] All directories created
 - [ ] Matches [05-DIRECTORY-STRUCTURE.md](./05-DIRECTORY-STRUCTURE.md)
 
@@ -603,7 +600,11 @@ export abstract class BaseEntity<T> {
   protected readonly _createdAt: Date
   protected _updatedAt: Date
 
-  constructor(id: T, createdAt: Date = new Date(), updatedAt: Date = new Date()) {
+  constructor(
+    id: T,
+    createdAt: Date = new Date(),
+    updatedAt: Date = new Date()
+  ) {
     this._id = id
     this._createdAt = createdAt
     this._updatedAt = updatedAt
@@ -630,6 +631,7 @@ export abstract class BaseEntity<T> {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Base entity compiles
 - [ ] Generic ID type supported
 
@@ -639,7 +641,12 @@ Create `src/core/domain/entities/notification.entity.ts`:
 
 ```typescript
 import { BaseEntity } from './base.entity'
-import { NotificationType, Channel, NotificationStatus, Priority } from '@prisma/client'
+import {
+  NotificationType,
+  Channel,
+  NotificationStatus,
+  Priority,
+} from '@prisma/client'
 
 export interface NotificationProps {
   id: string
@@ -736,7 +743,9 @@ export class Notification extends BaseEntity<string> {
   }
 
   // Factory method
-  static create(props: Omit<NotificationProps, 'createdAt' | 'updatedAt'>): Notification {
+  static create(
+    props: Omit<NotificationProps, 'createdAt' | 'updatedAt'>
+  ): Notification {
     return new Notification({
       ...props,
       createdAt: new Date(),
@@ -747,6 +756,7 @@ export class Notification extends BaseEntity<string> {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Entity compiles
 - [ ] Business logic methods work
 - [ ] Factory method works
@@ -820,11 +830,13 @@ export class NotificationId {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Email validation works
 - [ ] NotificationId generation works
 - [ ] Value objects are immutable
 
 **Commit**:
+
 ```bash
 git add .
 git commit -m "feat(domain): add core domain entities and value objects
@@ -852,6 +864,7 @@ pnpm dlx shadcn-ui@latest add button card input label select toast
 ```
 
 **Acceptance Criteria**:
+
 - [ ] shadcn/ui initialized
 - [ ] Components added to `src/components/ui/`
 - [ ] Tailwind configured
@@ -909,6 +922,7 @@ export const { GET, POST } = toNextJsHandler(auth)
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Better-Auth configured
 - [ ] Organization plugin enabled
 - [ ] Admin plugin enabled
@@ -927,16 +941,11 @@ export const authClient = createAuthClient({
   plugins: [adminClient(), organizationClient()],
 })
 
-export const {
-  signIn,
-  signUp,
-  signOut,
-  useSession,
-  organization,
-} = authClient
+export const { signIn, signUp, signOut, useSession, organization } = authClient
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Client hooks work
 - [ ] Organization methods available
 - [ ] Type-safe
@@ -961,9 +970,7 @@ export async function requireAuth(): Promise<Session> {
   return session
 }
 
-export async function requireRole(
-  allowedRoles: string[]
-): Promise<Session> {
+export async function requireRole(allowedRoles: string[]): Promise<Session> {
   const session = await requireAuth()
 
   // Check organization role
@@ -977,11 +984,13 @@ export async function requireRole(
 ```
 
 **Acceptance Criteria**:
+
 - [ ] `requireAuth()` redirects unauthenticated users
 - [ ] `requireRole()` checks permissions
 - [ ] Works with Server Components
 
 **Commit**:
+
 ```bash
 git add .
 git commit -m "feat(auth): integrate Better-Auth with organizations
@@ -1049,6 +1058,7 @@ export function createContextLogger(correlationId: string) {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Logger works in dev and prod
 - [ ] Correlation ID support
 - [ ] Structured logging (JSON)
@@ -1096,6 +1106,7 @@ curl http://localhost:3000/api/health
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Endpoint returns 200 when healthy
 - [ ] Endpoint returns 503 when unhealthy
 - [ ] Database check works
@@ -1177,6 +1188,7 @@ export async function POST(request: NextRequest) {
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Endpoint requires authentication
 - [ ] Input validation works
 - [ ] Notification created in database
@@ -1184,6 +1196,7 @@ export async function POST(request: NextRequest) {
 - [ ] Returns notification ID
 
 **Commit**:
+
 ```bash
 git add .
 git commit -m "feat(api): add logger and basic notification API
@@ -1241,6 +1254,7 @@ import '@testing-library/jest-dom'
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Jest configured for Next.js
 - [ ] Path aliases work
 - [ ] Coverage threshold set
@@ -1323,11 +1337,13 @@ pnpm test
 ```
 
 **Acceptance Criteria**:
+
 - [ ] Tests pass
 - [ ] Coverage reports generated
 - [ ] Watch mode works
 
 **Commit**:
+
 ```bash
 git add .
 git commit -m "test: add Jest configuration and entity tests
@@ -1347,8 +1363,7 @@ git commit -m "test: add Jest configuration and entity tests
 - [ ] **Project Setup**
   - [ ] Next.js 16 initialized with TypeScript
   - [ ] All dependencies installed
-  - [ ] ESLint, Prettier, Husky configured
-  - [ ] Git hooks working
+  - [ ] ESLint, Prettier configured
 
 - [ ] **Database**
   - [ ] NeonDB project created
@@ -1432,6 +1447,7 @@ curl -X POST http://localhost:3000/api/notifications/send \
 ## Next Phase
 
 Proceed to [32-PHASE-2-CORE-FEATURES.md](./32-PHASE-2-CORE-FEATURES.md):
+
 - Email channel with Resend
 - Outbox pattern implementation
 - Retry mechanism
@@ -1440,6 +1456,7 @@ Proceed to [32-PHASE-2-CORE-FEATURES.md](./32-PHASE-2-CORE-FEATURES.md):
 ---
 
 **Related Documents**:
+
 - [04-PROJECT-SETUP.md](./04-PROJECT-SETUP.md)
 - [05-DIRECTORY-STRUCTURE.md](./05-DIRECTORY-STRUCTURE.md)
 - [30-GIT-WORKFLOW.md](./30-GIT-WORKFLOW.md)
