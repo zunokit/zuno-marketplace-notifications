@@ -8,6 +8,8 @@ import {
 import { NotificationsTable } from '@/components/features/notifications-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function NotificationsPage() {
   const notifications = await prisma.notification.findMany({
     take: 50,

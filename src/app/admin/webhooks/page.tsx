@@ -9,6 +9,8 @@ import {
 import { WebhooksTable } from '@/components/features/webhooks-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function WebhooksPage() {
   const webhooks = await prisma.webhook.findMany({
     orderBy: { createdAt: 'desc' },

@@ -9,6 +9,8 @@ import {
 import { DeliveryAttemptsTable } from '@/components/features/delivery-attempts-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function DeliveryTrackingPage() {
   const deliveryAttempts = await prisma.deliveryAttempt.findMany({
     take: 100,

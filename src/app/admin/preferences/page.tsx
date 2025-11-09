@@ -8,6 +8,8 @@ import {
 import { PreferencesTable } from '@/components/features/preferences-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function PreferencesPage() {
   const preferences = await prisma.userPreference.findMany({
     take: 100,

@@ -9,6 +9,8 @@ import {
 import { ApiKeysTable } from '@/components/features/api-keys-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function ApiKeysPage() {
   const apiKeys = await prisma.apiKey.findMany({
     orderBy: { createdAt: 'desc' },
