@@ -1,5 +1,3 @@
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,14 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { PreferencesTable } from '@/components/features/preferences-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
 export default async function PreferencesPage() {
@@ -52,6 +43,8 @@ export default async function PreferencesPage() {
     >
   )
 
+  const userPrefsArray = Object.values(userPrefs)
+
   return (
     <div className="container py-8">
       <div className="mb-8">
@@ -69,78 +62,7 @@ export default async function PreferencesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>WebSocket</TableHead>
-                <TableHead>Push</TableHead>
-                <TableHead>SMS</TableHead>
-                <TableHead>Frequency</TableHead>
-                <TableHead>Timezone</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Object.keys(userPrefs).length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center">
-                    No preferences found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                Object.entries(userPrefs).map(([userId, data]) => (
-                  <TableRow key={userId}>
-                    <TableCell className="font-medium">
-                      {data.user.name || 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={data.channels.EMAIL ? 'default' : 'secondary'}
-                      >
-                        {data.channels.EMAIL ? 'Enabled' : 'Disabled'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          data.channels.WEBSOCKET ? 'default' : 'secondary'
-                        }
-                      >
-                        {data.channels.WEBSOCKET ? 'Enabled' : 'Disabled'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={data.channels.PUSH ? 'default' : 'secondary'}
-                      >
-                        {data.channels.PUSH ? 'Enabled' : 'Disabled'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={data.channels.SMS ? 'default' : 'secondary'}
-                      >
-                        {data.channels.SMS ? 'Enabled' : 'Disabled'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{data.frequency}</Badge>
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {data.timezone || 'N/A'}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="sm">
-                        Edit
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <PreferencesTable data={userPrefsArray} />
         </CardContent>
       </Card>
     </div>

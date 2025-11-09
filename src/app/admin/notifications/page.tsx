@@ -1,4 +1,3 @@
-import { Badge } from '@/components/ui/badge'
 import {
   Card,
   CardContent,
@@ -6,14 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { NotificationsTable } from '@/components/features/notifications-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
 export default async function NotificationsPage() {
@@ -43,58 +35,7 @@ export default async function NotificationsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Channel</TableHead>
-                <TableHead>User</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {notifications.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center">
-                    No notifications found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                notifications.map((notification) => (
-                  <TableRow key={notification.id}>
-                    <TableCell className="font-medium">
-                      {notification.type}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{notification.channel}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {notification.user.name || notification.user.email}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          notification.status === 'DELIVERED'
-                            ? 'default'
-                            : notification.status === 'FAILED'
-                              ? 'destructive'
-                              : 'secondary'
-                        }
-                      >
-                        {notification.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{notification.priority}</TableCell>
-                    <TableCell>
-                      {new Date(notification.createdAt).toLocaleDateString()}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <NotificationsTable data={notifications} />
         </CardContent>
       </Card>
     </div>

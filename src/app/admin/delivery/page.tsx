@@ -6,14 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { DeliveryAttemptsTable } from '@/components/features/delivery-attempts-table'
 import { prisma } from '@/infrastructure/database/prisma'
 
 export default async function DeliveryTrackingPage() {
@@ -66,74 +59,7 @@ export default async function DeliveryTrackingPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Timestamp</TableHead>
-                  <TableHead>User</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Channel</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Provider</TableHead>
-                  <TableHead>Response Time</TableHead>
-                  <TableHead>Error</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {deliveryAttempts.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center">
-                      No delivery attempts found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  deliveryAttempts.map((attempt) => (
-                    <TableRow key={attempt.id}>
-                      <TableCell className="text-sm">
-                        {new Date(attempt.attemptedAt).toLocaleString()}
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {attempt.notification.user.name ||
-                          attempt.notification.user.email}
-                      </TableCell>
-                      <TableCell>{attempt.notification.type}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {attempt.notification.channel}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            attempt.success ? 'default' : 'destructive'
-                          }
-                        >
-                          {attempt.success ? 'Success' : 'Failed'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {attempt.provider || 'N/A'}
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {attempt.duration ? `${attempt.duration}ms` : 'N/A'}
-                      </TableCell>
-                      <TableCell>
-                        {attempt.error ? (
-                          <span className="text-xs text-red-600">
-                            {attempt.error.substring(0, 50)}
-                            {attempt.error.length > 50 ? '...' : ''}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">
-                            -
-                          </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+            <DeliveryAttemptsTable data={deliveryAttempts} />
           </CardContent>
         </Card>
 

@@ -39,7 +39,7 @@ function validateEnv(): Env {
       return result.data
     }
     // Return env vars as-is if validation fails (CI build only)
-    return process.env as Env
+    return process.env as unknown as Env
   }
 
   try {
