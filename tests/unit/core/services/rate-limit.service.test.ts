@@ -3,7 +3,8 @@ jest.mock('@/infrastructure/database/prisma', () => ({
   Channel: {
     EMAIL: 'EMAIL',
     SMS: 'SMS',
-    WEBHOOK: 'WEBHOOK',
+    WEBSOCKET: 'WEBSOCKET',
+    PUSH: 'PUSH',
   },
   prisma: {},
 }))
@@ -32,7 +33,10 @@ jest.mock('@/lib/logger/logger', () => ({
   },
 }))
 
-import { redis as mockRedis } from '@/infrastructure/cache/redis.client'
+import { redis } from '@/infrastructure/cache/redis.client'
+
+// Type the mocks properly
+const mockRedis = jest.mocked(redis)
 
 describe('RateLimitService', () => {
   let service: RateLimitService
@@ -181,7 +185,7 @@ describe('RateLimitService', () => {
 
       await service.checkRateLimit('org-1', Channel.EMAIL)
       await service.checkRateLimit('org-1', Channel.SMS)
-      await service.checkRateLimit('org-1', Channel.WEBHOOK)
+      await service.checkRateLimit('org-1', Channel.WEBSOCKET)
 
       expect(mockRedis.incr).toHaveBeenCalled()
     })
@@ -252,7 +256,7 @@ describe('RateLimitService', () => {
   describe('resetRateLimit', () => {
     it('should delete all time window keys', async () => {
       mockRedis.connect.mockResolvedValue(undefined)
-      mockRedis.del.mockResolvedValue(1)
+      mockRedis.del.mockResolvedValue(undefined)
 
       await service.resetRateLimit('org-1', Channel.EMAIL)
 
@@ -262,7 +266,7 @@ describe('RateLimitService', () => {
 
     it('should work with different organizations', async () => {
       mockRedis.connect.mockResolvedValue(undefined)
-      mockRedis.del.mockResolvedValue(1)
+      mockRedis.del.mockResolvedValue(undefined)
 
       await service.resetRateLimit('org-1', Channel.EMAIL)
       await service.resetRateLimit('org-2', Channel.EMAIL)
@@ -272,7 +276,7 @@ describe('RateLimitService', () => {
 
     it('should work with different channels', async () => {
       mockRedis.connect.mockResolvedValue(undefined)
-      mockRedis.del.mockResolvedValue(1)
+      mockRedis.del.mockResolvedValue(undefined)
 
       await service.resetRateLimit('org-1', Channel.EMAIL)
       await service.resetRateLimit('org-1', Channel.SMS)

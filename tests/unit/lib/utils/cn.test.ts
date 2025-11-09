@@ -80,8 +80,8 @@ describe('cn utility function', () => {
   })
 
   it('should handle dynamic button variants', () => {
-    const variant = 'primary'
-    const size = 'large'
+    const variant = 'primary' as 'primary' | 'secondary'
+    const size = 'large' as 'small' | 'large'
 
     const result = cn(
       'button',
