@@ -33,7 +33,7 @@ const webhookRoutes = [
   '/api/webhooks/nft-listed',
 ]
 
-export default async function authMiddleware(request: NextRequest) {
+export default async function authProxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes

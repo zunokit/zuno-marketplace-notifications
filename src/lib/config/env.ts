@@ -30,6 +30,18 @@ const envSchema = z.object({
 export type Env = z.infer<typeof envSchema>
 
 function validateEnv(): Env {
+  // Skip strict validation in CI builds if SKIP_ENV_VALIDATION is set
+  // This allows builds to proceed with dummy environment variables
+  if (process.env.SKIP_ENV_VALIDATION === 'true') {
+    // Use safeParse to allow builds with invalid/missing env vars
+    const result = envSchema.safeParse(process.env)
+    if (result.success) {
+      return result.data
+    }
+    // Return env vars as-is if validation fails (CI build only)
+    return process.env as Env
+  }
+
   try {
     return envSchema.parse(process.env)
   } catch (error) {

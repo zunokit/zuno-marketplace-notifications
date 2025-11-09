@@ -168,4 +168,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:generate
-      - run: pnpm build
+      - name: Build Next.js
+        env:
+          SKIP_ENV_VALIDATION: true
+          DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          BETTER_AUTH_SECRET: test-secret-minimum-32-characters-long-for-ci-builds
+          BETTER_AUTH_URL: http://localhost:3000
+          RESEND_API_KEY: re_test_key
+          REDIS_URL: redis://localhost:6379
+        run: pnpm build
