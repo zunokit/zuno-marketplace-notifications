@@ -7,6 +7,8 @@ import {
 } from '@/components/ui/card'
 import { prisma } from '@/infrastructure/database/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export default async function AnalyticsPage() {
   const [totalCount, sentCount, deliveredCount, failedCount] =
     await Promise.all([
