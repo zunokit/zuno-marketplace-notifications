@@ -1,4 +1,4 @@
-import type { Channel } from '@prisma/client'
+import type { Channel } from '@/infrastructure/database/prisma'
 
 import redis from '@/lib/redis/client'
 import { logger } from '@/lib/logger/logger'

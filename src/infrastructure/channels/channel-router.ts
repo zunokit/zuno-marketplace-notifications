@@ -1,4 +1,4 @@
-import { Channel } from '@prisma/client'
+import { Channel } from '@/infrastructure/database/prisma'
 
 import { INotificationChannel } from './channel.interface'
 import { EmailChannel } from './email/email.channel'

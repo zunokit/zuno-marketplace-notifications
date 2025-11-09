@@ -3,7 +3,7 @@ import type {
   NotificationStatus,
   NotificationType,
   Priority,
-} from '@prisma/client'
+} from '@/infrastructure/database/prisma'
 
 import { BaseEntity } from './base.entity'
 

@@ -1,5 +1,5 @@
 import { prisma } from '@/infrastructure/database/prisma'
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@/infrastructure/database/prisma'
 
 export class NotificationRepository {
   /**

@@ -1,4 +1,4 @@
-import type { Channel, NotificationType, Priority } from '@prisma/client'
+import type { Channel, NotificationType, Priority } from '@/infrastructure/database/prisma'
 import { nanoid } from 'nanoid'
 
 import { OutboxRepository } from '@/infrastructure/outbox/outbox.repository'

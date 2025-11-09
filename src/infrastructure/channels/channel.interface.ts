@@ -1,4 +1,4 @@
-import { Channel } from '@prisma/client'
+import { Channel } from '@/infrastructure/database/prisma'
 
 export interface ChannelDeliveryResult {
   success: boolean

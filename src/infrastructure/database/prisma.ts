@@ -1,4 +1,7 @@
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from './generated'
+
+// Re-export all types and enums from generated client
+export * from './generated'
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient }
 

@@ -1,4 +1,4 @@
-import type { Prisma } from '@prisma/client'
+import type { Prisma } from '@/infrastructure/database/prisma'
 
 import { prisma } from '@/infrastructure/database/prisma'
 import { logger } from '@/lib/logger/logger'
