@@ -71,7 +71,7 @@ jobs:
             ${{ runner.os }}-prisma-
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm prisma generate
+      - run: pnpm db:generate
       - run: pnpm typecheck
 
   test:
@@ -118,7 +118,7 @@ jobs:
             ${{ runner.os }}-jest-
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm prisma generate
+      - run: pnpm db:generate
       - run: pnpm test:ci
 
   build:
@@ -167,5 +167,5 @@ jobs:
             ${{ runner.os }}-nextjs-
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm prisma generate
+      - run: pnpm db:generate
       - run: pnpm build

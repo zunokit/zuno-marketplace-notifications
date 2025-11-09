@@ -54,4 +54,4 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           pnpm install --frozen-lockfile
-          pnpm prisma migrate deploy
+          pnpm db:migrate:deploy
