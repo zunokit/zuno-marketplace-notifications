@@ -1,3 +1,4 @@
+import { Prisma } from '@/infrastructure/database/generated'
 import { prisma } from '@/infrastructure/database/prisma'
 import { logger } from '@/lib/logger/logger'
 
@@ -8,17 +9,39 @@ export interface IdempotencyResult {
 
 /**
  * Service for handling idempotency and deduplication of notifications
+ *
+ * Uses database unique constraint on idempotencyKey to prevent race conditions.
+ * The database enforces atomicity - no check-then-act anti-pattern.
  */
 export class IdempotencyService {
   /**
-   * Check if a notification with the given idempotency key already exists
+   * Get existing notification by idempotency key (if duplicate)
+   *
+   * This method is called AFTER a create attempt fails with unique constraint violation.
+   * The database unique constraint ensures race-condition-free idempotency.
+   *
+   * @param idempotencyKey - Unique key to check
+   * @param organizationId - Organization for additional validation
+   * @returns Existing notification ID if found, undefined otherwise
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await prisma.notification.create({ data: { ...data, idempotencyKey } })
+   * } catch (error) {
+   *   if (error.code === 'P2002') {
+   *     const existingId = await idempotencyService.getExistingNotification(key, orgId)
+   *     return existingNotification
+   *   }
+   *   throw error
+   * }
+   * ```
    */
-  async checkIdempotency(
+  async getExistingNotification(
     idempotencyKey: string,
     organizationId: string
-  ): Promise<IdempotencyResult> {
+  ): Promise<string | undefined> {
     try {
-      // Find existing notification with this idempotency key
       const existing = await prisma.notification.findFirst({
         where: {
           idempotencyKey,
@@ -32,32 +55,44 @@ export class IdempotencyService {
       })
 
       if (existing) {
-        logger.info('Duplicate notification detected', {
+        logger.info('Retrieved duplicate notification after constraint violation', {
           idempotencyKey,
           existingId: existing.id,
           status: existing.status,
         })
 
-        return {
-          isDuplicate: true,
-          existingNotificationId: existing.id,
-        }
+        return existing.id
       }
 
-      return {
-        isDuplicate: false,
-      }
+      // Edge case: unique constraint violated but record not found
+      // This shouldn't happen but handle gracefully
+      logger.warn('Unique constraint violation but notification not found', {
+        idempotencyKey,
+        organizationId,
+      })
+
+      return undefined
     } catch (error) {
-      logger.error('Error checking idempotency', {
+      logger.error('Error retrieving existing notification', {
         idempotencyKey,
         organizationId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
-      // On error, allow the notification to proceed
-      return {
-        isDuplicate: false,
-      }
+      return undefined
     }
+  }
+
+  /**
+   * Check if error is a duplicate key violation (Prisma P2002)
+   *
+   * @param error - Error to check
+   * @returns True if error is unique constraint violation
+   */
+  isDuplicateKeyError(error: unknown): boolean {
+    return (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    )
   }
 
   /**

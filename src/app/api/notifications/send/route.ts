@@ -1,40 +1,60 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { SendNotificationUseCase } from '@/core/use-cases/notifications/send-notification.use-case'
 import { logger } from '@/lib/logger/logger'
+import { withAuth } from '@/lib/api/route-handler'
+import { NotificationType, Channel, Priority } from '@/infrastructure/database/generated'
 
 const SendNotificationSchema = z.object({
   userId: z.string().uuid(),
-  type: z.enum([
-    'WELCOME',
-    'AUCTION_WON',
-    'BID_PLACED',
-    'EMAIL_VERIFICATION',
-    'CUSTOM',
-  ]),
-  channel: z.enum(['EMAIL', 'WEBSOCKET', 'PUSH', 'SMS']),
+  type: z.nativeEnum(NotificationType),
+  channel: z.nativeEnum(Channel),
   templateId: z.string().uuid().optional(),
   templateSlug: z.string().optional(),
   payload: z.record(z.unknown()),
   idempotencyKey: z.string().optional(),
-  priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
+  priority: z.nativeEnum(Priority).default('NORMAL'),
   scheduledAt: z.string().datetime().optional(),
 })
 
-export async function POST(request: NextRequest) {
+/**
+ * Send a notification
+ *
+ * @route POST /api/notifications/send
+ * @access Authenticated users
+ *
+ * @example
+ * ```json
+ * {
+ *   "userId": "user-uuid",
+ *   "type": "AUCTION_WON",
+ *   "channel": "EMAIL",
+ *   "templateSlug": "auction-won",
+ *   "payload": {
+ *     "auctionTitle": "CryptoPunk #123",
+ *     "winningBid": "10 ETH"
+ *   }
+ * }
+ * ```
+ */
+export const POST = withAuth(async (request, { user, organization }) => {
   try {
-    // For now, use a default org ID until we implement full authentication
-    const defaultOrgId = 'default-org-id'
-
     // Validate request body
     const body = await request.json()
     const validated = SendNotificationSchema.parse(body)
 
-    // Execute use case
+    logger.info('Creating notification', {
+      userId: user.id,
+      organizationId: organization.id,
+      type: validated.type,
+      channel: validated.channel,
+    })
+
+    // Execute use case with authenticated organization
     const useCase = new SendNotificationUseCase()
     const notification = await useCase.execute({
-      organizationId: defaultOrgId,
+      organizationId: organization.id, // ✅ From authenticated context
       userId: validated.userId,
       type: validated.type,
       channel: validated.channel,
@@ -73,4 +93,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
