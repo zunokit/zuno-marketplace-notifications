@@ -273,8 +273,18 @@ export class DropNotificationService {
 
   /**
    * Notify user of successful mint
+   *
+   * @param params - Mint success notification parameters
+   * @param params.organizationId - Organization ID (required, no defaults)
+   * @param params.userId - User ID who performed the mint
+   * @param params.nftId - Minted NFT identifier
+   * @param params.nftName - NFT name for display
+   * @param params.transactionHash - Blockchain transaction hash
+   * @param params.imageUrl - Optional NFT image URL
+   * @param params.marketplaceUrl - Optional marketplace link
    */
   async notifyMintSuccess(params: {
+    organizationId: string
     userId: string
     nftId: string
     nftName: string
@@ -282,7 +292,7 @@ export class DropNotificationService {
     imageUrl?: string
     marketplaceUrl?: string
   }) {
-    const { userId, nftId, nftName, transactionHash, imageUrl, marketplaceUrl } = params
+    const { organizationId, userId, nftId, nftName, transactionHash, imageUrl, marketplaceUrl } = params
 
     try {
       const user = await prisma.user.findUnique({
@@ -292,7 +302,7 @@ export class DropNotificationService {
       if (!user) return
 
       await this.sendNotificationUseCase.execute({
-        organizationId: 'default',
+        organizationId, // ✅ From parameter, not hardcoded
         userId,
         type: 'MINT_SUCCESS',
         channel: 'EMAIL',
@@ -310,11 +320,13 @@ export class DropNotificationService {
       })
 
       logger.info('Mint success notification sent', {
+        organizationId,
         userId,
         nftId,
       })
     } catch (error) {
       logger.error('Failed to send mint success notification', {
+        organizationId,
         userId,
         nftId,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -324,14 +336,22 @@ export class DropNotificationService {
 
   /**
    * Notify user of failed mint
+   *
+   * @param params - Mint failure notification parameters
+   * @param params.organizationId - Organization ID (required, no defaults)
+   * @param params.userId - User ID who attempted the mint
+   * @param params.dropName - Drop name for display
+   * @param params.reason - Failure reason to display to user
+   * @param params.retryUrl - Optional URL for retry attempt
    */
   async notifyMintFailed(params: {
+    organizationId: string
     userId: string
     dropName: string
     reason: string
     retryUrl?: string
   }) {
-    const { userId, dropName, reason, retryUrl } = params
+    const { organizationId, userId, dropName, reason, retryUrl } = params
 
     try {
       const user = await prisma.user.findUnique({
@@ -341,7 +361,7 @@ export class DropNotificationService {
       if (!user) return
 
       await this.sendNotificationUseCase.execute({
-        organizationId: 'default',
+        organizationId, // ✅ From parameter, not hardcoded
         userId,
         type: 'MINT_FAILED',
         channel: 'EMAIL',
@@ -357,11 +377,13 @@ export class DropNotificationService {
       })
 
       logger.info('Mint failed notification sent', {
+        organizationId,
         userId,
         dropName,
       })
     } catch (error) {
       logger.error('Failed to send mint failed notification', {
+        organizationId,
         userId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })

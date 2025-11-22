@@ -220,8 +220,18 @@ export class WatchlistService {
 
   /**
    * Notify watchers of activity on their NFTs
+   *
+   * @param params - NFT activity notification parameters
+   * @param params.organizationId - Organization ID (required, no defaults)
+   * @param params.nftId - NFT identifier
+   * @param params.nftName - NFT name for display
+   * @param params.ownerId - Owner user ID to notify
+   * @param params.activityType - Type of activity (bid, offer, sale)
+   * @param params.actorName - Name of user performing the action
+   * @param params.amount - Transaction amount (optional)
    */
   async notifyNFTActivity(params: {
+    organizationId: string
     nftId: string
     nftName: string
     ownerId: string
@@ -229,7 +239,7 @@ export class WatchlistService {
     actorName: string
     amount?: number
   }) {
-    const { nftId, nftName, ownerId, activityType, actorName, amount } = params
+    const { organizationId, nftId, nftName, ownerId, activityType, actorName, amount } = params
 
     try {
       let notificationType: string
@@ -257,7 +267,7 @@ export class WatchlistService {
       }
 
       await this.sendNotificationUseCase.execute({
-        organizationId: 'default', // You'd get this from user data
+        organizationId, // ✅ From parameter, not hardcoded
         userId: ownerId,
         type: notificationType as any,
         channel: 'WEBSOCKET',
@@ -275,12 +285,14 @@ export class WatchlistService {
       })
 
       logger.info('NFT activity notification sent', {
+        organizationId,
         nftId,
         ownerId,
         activityType,
       })
     } catch (error) {
       logger.error('Failed to send NFT activity notification', {
+        organizationId,
         nftId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
