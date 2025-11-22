@@ -1,570 +1,305 @@
-# CLAUDE.md - AI Assistant Guide
+# CLAUDE.md
 
-**Project**: Zuno Marketplace Notifications
-**Version**: 1.0.0
-**Status**: 🚧 Under Development (Planning Phase)
-**Last Updated**: 2025-11-15
-
----
-
-## Quick Start for AI Assistants
-
-This document provides essential context for AI assistants (like Claude) working on the Zuno Marketplace Notifications codebase. Read this file first before making any code changes.
-
----
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-### What This Project Does
+**Zuno Marketplace Notifications** is an enterprise-grade, multi-channel notification service for the Zuno NFT Marketplace. It provides reliable, scalable notification delivery across Email, WebSocket, Push (future), and SMS (future) channels.
 
-An **enterprise-grade, multi-channel notification service** for the Zuno NFT Marketplace ecosystem. It delivers reliable, scalable notifications across Email, WebSocket, Push, and SMS channels using a robust outbox pattern with retry mechanisms.
+**Key Technologies**: Next.js 16 (App Router), TypeScript 5, Prisma ORM, Better Auth, PostgreSQL (NeonDB), Redis, shadcn/ui, TanStack Query
 
-### Key Characteristics
+## Essential Commands
 
-- **Architecture**: Clean Architecture (Domain → Application → Infrastructure → Presentation)
-- **Tech Stack**: Next.js 16, TypeScript, Prisma, PostgreSQL (NeonDB), Redis, Better-Auth
-- **Reliability**: At-least-once delivery via Outbox Pattern
-- **Scalability**: Horizontal scaling with stateless workers
-- **Multi-tenancy**: Organization-based isolation via Better-Auth
+### Before Commit/Task Completion (MANDATORY)
+**ALWAYS run these commands in order before committing or marking a task complete:**
 
-### Current Development Phase
-
-**Phase 1: Foundation (Weeks 1-2)** - Currently in planning phase
-- ✅ Documentation complete (38 files)
-- 🚧 Implementation starting
-- Next: Database schema, authentication, core domain entities
-
----
-
-## Repository Structure
-
-### Current State (Planning Phase)
-
-```
-zuno-marketplace-notifications/
-├── docs/                      # Complete documentation (8 files exist, 30 planned)
-│   ├── 00-INDEX.md           # Master index
-│   ├── 01-PROJECT-OVERVIEW.md
-│   ├── 02-ARCHITECTURE.md    # System architecture (CRITICAL)
-│   ├── 03-DATABASE-SCHEMA.md # Complete Prisma schema
-│   ├── 04-PROJECT-SETUP.md   # Setup instructions
-│   ├── 05-DIRECTORY-STRUCTURE.md
-│   ├── 30-GIT-WORKFLOW.md    # Branch strategy, commits
-│   └── 31-PHASE-1-FOUNDATION.md # Implementation guide
-├── README.md                  # Public-facing documentation
-├── DOCUMENTATION-SUMMARY.md   # Overview of all docs
-├── PROJECT-CHECKLIST.md       # Implementation checklist
-└── CLAUDE.md                  # This file
+```bash
+pnpm lint          # ESLint - fix issues with `pnpm lint:fix`
+pnpm typecheck     # TypeScript type checking
+pnpm test          # Jest tests (--passWithNoTests)
+pnpm build         # Next.js production build
 ```
 
-### Planned Structure (Not Yet Created)
+### Development
+
+```bash
+pnpm dev                    # Start Next.js dev server (localhost:3000)
+pnpm docker:up              # Start PostgreSQL, Redis, Mailpit (REQUIRED for dev)
+pnpm db:generate            # Generate Prisma Client (run after schema changes)
+pnpm db:migrate             # Create and apply database migrations
+pnpm db:studio              # Open Prisma Studio (database GUI)
+```
+
+### Database Operations
+
+```bash
+pnpm db:generate            # Generate Prisma Client from schema
+pnpm db:migrate             # Create new migration and apply
+pnpm db:migrate:deploy      # Apply pending migrations (production)
+pnpm db:seed                # Seed database with test data
+pnpm db:reset               # Reset database (DESTRUCTIVE)
+```
+
+Note: Prisma schema is at `src/infrastructure/database/prisma/schema.prisma` (not default location)
+
+### Testing
+
+```bash
+pnpm test                   # Run tests in watch mode
+pnpm test:ci                # Run tests with coverage (CI)
+pnpm test:watch             # Run tests in watch mode
+```
+
+Test a single file:
+```bash
+pnpm test src/core/use-cases/notifications/send-notification.use-case.test.ts
+```
+
+### Code Quality
+
+```bash
+pnpm lint                   # Run ESLint
+pnpm lint:fix               # Auto-fix linting issues
+pnpm format                 # Format code with Prettier
+```
+
+## Architecture Overview
+
+### Clean Architecture Layers
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ Presentation Layer (src/app)                                │
+│ - Next.js App Router (API routes + pages)                   │
+│ - React components + shadcn/ui                               │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Application Layer (src/core)                                │
+│ - Use Cases: Business logic orchestration                   │
+│ - Domain Entities & Value Objects                           │
+│ - Domain Services                                            │
+└─────────────────────────────────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Infrastructure Layer (src/infrastructure)                   │
+│ - Repositories: Database access (Prisma)                    │
+│ - Channels: Email, WebSocket, Push, SMS providers           │
+│ - Outbox: Reliable message delivery pattern                 │
+│ - Workers: Background processing                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Critical Patterns
+
+#### 1. Outbox Pattern for Reliability
+
+All notifications use the **Outbox Pattern** to ensure at-least-once delivery:
+
+```typescript
+// src/infrastructure/outbox/outbox.repository.ts
+async createWithNotification(notificationData, outboxData) {
+  return await prisma.$transaction(async (tx) => {
+    const notification = await tx.notification.create({ data: notificationData })
+    const outbox = await tx.outbox.create({
+      data: { ...outboxData, notification: { connect: { id: notification.id } } }
+    })
+    return { notification, outbox }
+  })
+}
+```
+
+**Flow**:
+1. Notification + Outbox entry created in single transaction
+2. Background workers (`src/workers/outbox-worker.ts`) poll Outbox table
+3. Workers lock and process entries, updating status
+4. Failed entries retry with exponential backoff (2, 4, 8, 16, 32 minutes)
+5. After 5 retries, moved to Dead Letter Queue
+
+#### 2. Multi-Tenant Organization Model
+
+Better Auth provides organization-based multi-tenancy with RBAC:
+
+- **Organizations**: Top-level tenant isolation
+- **OrganizationMember**: User-to-organization mapping with roles (OWNER, ADMIN, EDITOR, VIEWER)
+- **All resources** (notifications, templates, etc.) belong to an organization
+
+**Auth**: Configured in `src/lib/auth/better-auth.ts` (not `auth.ts`)
+
+#### 3. Channel Router Pattern
+
+Notifications route through channels based on type:
+
+```typescript
+// src/infrastructure/channels/channel-router.ts
+route(notification) {
+  switch (notification.channel) {
+    case 'EMAIL': return emailChannel
+    case 'WEBSOCKET': return websocketChannel
+    // ...
+  }
+}
+```
+
+Each channel implements `IChannel` interface:
+- `send(notification)`: Send via provider
+- `validate(payload)`: Validate payload structure
+
+Providers: Resend (email), Mailpit (dev email), WebSocket (custom)
+
+#### 4. Template System
+
+Handlebars-based templates with versioning:
+
+```typescript
+// src/infrastructure/templates/template.service.ts
+renderTemplate(templateId, variables) {
+  const template = await getTemplate(templateId)
+  const compiled = Handlebars.compile(template.body)
+  return { subject: template.subject, body: compiled(variables) }
+}
+```
+
+Templates support:
+- Multiple versions (version history in `TemplateVersion` table)
+- Channel-specific (EMAIL has subject/body, WEBSOCKET has message)
+- Variable extraction from Handlebars syntax
+
+## Directory Structure
 
 ```
 src/
-├── app/                       # Next.js App Router (API + pages)
-│   ├── api/                   # API routes
-│   │   ├── notifications/     # Notification endpoints
-│   │   ├── templates/         # Template management
-│   │   ├── preferences/       # User preferences
-│   │   └── webhooks/          # External webhooks
-│   └── admin/                 # Admin UI pages
-├── core/                      # Domain & Application Layer
-│   ├── domain/                # Entities, value objects, events
-│   ├── use-cases/             # Business logic
-│   └── services/              # Domain services
-├── infrastructure/            # External dependencies
-│   ├── database/              # Prisma client
-│   ├── repositories/          # Data access
-│   ├── channels/              # Email, WebSocket, Push, SMS
-│   ├── outbox/                # Outbox pattern
-│   └── cache/                 # Redis
-├── components/                # React components
-│   ├── admin/                 # Admin-specific
-│   ├── shared/                # Reusable components
-│   └── ui/                    # shadcn/ui components
-├── lib/                       # Utilities
-│   ├── auth/                  # Better-Auth config
-│   ├── logger/                # Winston logger
-│   ├── utils/                 # Helper functions
-│   └── config/                # Environment validation
-└── workers/                   # Background workers
+├── app/                           # Next.js App Router
+│   ├── api/                       # API routes
+│   │   ├── notifications/         # /api/notifications/*
+│   │   ├── templates/             # /api/templates/*
+│   │   ├── preferences/           # /api/preferences/*
+│   │   ├── webhooks/              # /api/webhooks/*
+│   │   └── health/                # /api/health
+│   ├── (dashboard)/               # Protected dashboard routes
+│   └── (auth)/                    # Auth pages (login, signup)
+│
+├── core/                          # Clean architecture domain layer
+│   ├── domain/
+│   │   ├── entities/              # Domain entities (Notification, etc.)
+│   │   └── value-objects/         # Value objects (Email, NotificationId)
+│   ├── use-cases/                 # Application business logic
+│   │   └── notifications/         # Notification use cases
+│   └── services/                  # Domain services
+│       ├── template.service.ts
+│       ├── rate-limit.service.ts
+│       └── idempotency.service.ts
+│
+├── infrastructure/                # External dependencies
+│   ├── database/
+│   │   ├── prisma/
+│   │   │   ├── schema.prisma      # Database schema (NOT in root!)
+│   │   │   └── seed.ts
+│   │   ├── generated/             # Prisma Client output
+│   │   └── prisma.ts              # Prisma client instance
+│   ├── repositories/              # Database access layer
+│   │   ├── notification.repository.ts
+│   │   └── template.repository.ts
+│   ├── outbox/                    # Outbox pattern implementation
+│   │   └── outbox.repository.ts
+│   ├── channels/                  # Notification channels
+│   │   ├── channel.interface.ts
+│   │   ├── channel-router.ts
+│   │   ├── email/
+│   │   │   ├── email.channel.ts
+│   │   │   ├── resend.provider.ts
+│   │   │   └── mailpit-provider.ts
+│   │   └── websocket/
+│   ├── templates/                 # Template rendering
+│   └── rate-limiting/             # Rate limiting with Redis
+│
+├── workers/                       # Background workers
+│   ├── outbox-worker.ts           # Process outbox entries
+│   ├── retry-worker.ts            # Retry failed notifications
+│   └── scheduler-worker.ts        # Future: scheduled notifications
+│
+├── components/                    # React components (shadcn/ui)
+│   ├── ui/                        # shadcn/ui base components
+│   └── features/                  # Feature-specific components
+│
+└── lib/                           # Utilities & configuration
+    ├── auth/
+    │   ├── better-auth.ts         # Better Auth config
+    │   ├── client.ts              # Client-side auth
+    │   └── guards.ts              # Auth guards
+    ├── config/
+    │   └── env.ts                 # Environment validation (Zod)
+    ├── logger/
+    │   └── logger.ts              # Winston logger
+    ├── middleware/                # Express-style middleware
+    └── redis/
+        └── client.ts              # Redis client
 ```
 
----
+## Key Files & Their Purpose
 
-## Critical Architecture Patterns
+| File | Purpose |
+|------|---------|
+| `src/lib/config/env.ts` | **Environment validation** - Zod schema validates all env vars on startup |
+| `src/infrastructure/database/prisma/schema.prisma` | **Database schema** - Single source of truth (NOTE: not in project root!) |
+| `src/lib/auth/better-auth.ts` | **Authentication config** - Better Auth setup with organizations |
+| `src/infrastructure/outbox/outbox.repository.ts` | **Outbox pattern** - Transactional notification creation |
+| `src/workers/outbox-worker.ts` | **Background processing** - Polls and processes outbox entries |
+| `src/infrastructure/channels/channel-router.ts` | **Channel routing** - Routes notifications to correct channel |
+| `src/core/use-cases/notifications/send-notification.use-case.ts` | **Send notification** - Main business logic entry point |
 
-### 1. Outbox Pattern (MOST IMPORTANT)
+## Database Schema Key Concepts
 
-**Purpose**: Ensure reliable notification delivery with at-least-once semantics
-
-**How It Works**:
-```typescript
-// Write to database + outbox in single transaction
-await prisma.$transaction(async (tx) => {
-  // Create notification record
-  await tx.notification.create({ data: notificationData })
-
-  // Create outbox entry (same transaction!)
-  await tx.outbox.create({ data: outboxData })
-})
-
-// Background worker polls outbox every 1 second
-// Processes pending records → sends to channels → updates status
-```
-
-**Key Points**:
-- ALWAYS write to outbox in same transaction as notification
-- Outbox status flow: `pending` → `processing` → `sent` or `failed`
-- Worker uses `SELECT FOR UPDATE SKIP LOCKED` to prevent concurrent processing
-
-### 2. Clean Architecture Layers
-
-**Dependency Rules** (STRICT):
-```
-Domain Layer (core/domain/)
-  ↑ No dependencies - pure business logic
-
-Application Layer (core/use-cases/)
-  ↑ Depends on Domain only
-
-Infrastructure Layer (infrastructure/)
-  ↑ Depends on Application & Domain
-
-Presentation Layer (app/)
-  ↑ Depends on all layers
-```
-
-**Never violate these dependencies!** Domain must remain pure.
-
-### 3. Retry with Exponential Backoff
-
-```typescript
-// Retry delays: 1s, 2s, 4s, 8s, 16s
-delay = BASE_DELAY_MS * Math.pow(2, retryCount)
-
-// After 5 attempts → Dead Letter Queue
-if (retryCount >= 5) {
-  await moveToDeadLetterQueue(notification)
-}
-```
-
-### 4. Idempotency
-
-```typescript
-// Use idempotency keys to prevent duplicate sends
-const idempotencyKey = request.headers['idempotency-key'] || generateKey()
-
-// Check Redis cache (24-hour window)
-const existing = await redis.get(`idempotency:${idempotencyKey}`)
-if (existing) {
-  return JSON.parse(existing) // Return cached response
-}
-```
-
----
-
-## Development Workflows
-
-### Git Workflow
-
-**Branch Strategy**:
-```
-main (production)
-└── develop (integration)
-    ├── feature/* (new features)
-    ├── fix/* (bug fixes)
-    └── hotfix/* (critical fixes)
-```
-
-**Branch Naming**:
-```bash
-<type>/<ticket-id>-<short-description>
-
-Examples:
-feature/NOT-123-add-websocket-channel
-fix/NOT-456-rate-limit-bug
-hotfix/NOT-789-critical-email-failure
-```
-
-**Conventional Commits**:
-```
-<type>(<scope>): <subject>
-
-Examples:
-feat(email): add template versioning
-fix(rate-limit): prevent race condition
-docs(api): update endpoint documentation
-```
-
-**Pre-Push Checklist** (MANDATORY):
-```bash
-pnpm typecheck   # TypeScript type checking
-pnpm lint        # ESLint
-pnpm test        # Jest tests
-pnpm build       # Next.js build
-```
-
-### Creating Features
-
-1. **Always start from `develop` branch**:
-   ```bash
-   git checkout develop
-   git pull origin develop
-   git checkout -b feature/NOT-123-description
-   ```
-
-2. **Make atomic commits** (one logical change per commit)
-
-3. **Keep branch updated**:
-   ```bash
-   git fetch origin develop
-   git rebase origin/develop
-   ```
-
-4. **Create PR with template** (see `.github/PULL_REQUEST_TEMPLATE.md`)
-
----
-
-## Coding Standards
-
-### TypeScript Rules
-
-1. **Strict Mode**: No `any` type (use `unknown` instead)
-2. **Explicit Return Types**: All functions must declare return types
-3. **No Null**: Prefer `undefined` over `null`
-4. **Immutability**: Use `readonly` for arrays/objects that shouldn't change
-
-### Import Order (STRICT)
-
-```typescript
-// 1. External dependencies
-import { z } from 'zod'
-import { prisma } from '@prisma/client'
-
-// 2. Internal core (domain, use-cases)
-import { Notification } from '@/core/domain/entities/notification.entity'
-import { SendNotificationUseCase } from '@/core/use-cases/notifications/send-notification.use-case'
-
-// 3. Infrastructure
-import { NotificationRepository } from '@/infrastructure/repositories/notification.repository'
-
-// 4. Components
-import { Button } from '@/components/ui/button'
-
-// 5. Utilities
-import { logger } from '@/lib/logger/logger'
-import { cn } from '@/lib/utils/cn'
-
-// 6. Types
-import type { NotificationType } from '@/core/domain/types/notification.types'
-
-// 7. Relative imports (if needed)
-import { formatDate } from '../utils/date'
-```
-
-### Naming Conventions
-
-| Type | Convention | Example |
-|------|-----------|---------|
-| **Components** | PascalCase | `NotificationsList.tsx` |
-| **Files** | kebab-case | `send-notification.use-case.ts` |
-| **Functions** | camelCase | `sendNotification()` |
-| **Constants** | SCREAMING_SNAKE_CASE | `MAX_RETRY_ATTEMPTS` |
-| **Interfaces** | PascalCase with `I` prefix | `INotificationRepository` |
-| **Types** | PascalCase | `NotificationStatus` |
-| **Enums** | PascalCase | `Channel` |
-
-### File Naming Patterns
+### Notification Lifecycle
 
 ```
-*.entity.ts        # Domain entities
-*.vo.ts            # Value objects
-*.use-case.ts      # Use cases
-*.service.ts       # Services
-*.repository.ts    # Repositories
-*.test.ts          # Tests
-*.types.ts         # Type definitions
+PENDING → PROCESSING → SENT → DELIVERED
+   ↓
+FAILED (with retries) → DEAD_LETTER (after max retries)
+   ↓
+CANCELLED or EXPIRED
 ```
 
-### Error Handling
+### Notification Types
 
-```typescript
-// ✅ GOOD: Always use try-catch with logger
-try {
-  await sendEmail(notification)
-  logger.info('Email sent', { notificationId: notification.id })
-} catch (error) {
-  logger.error('Failed to send email', { error, notificationId: notification.id })
-  throw new AppError('EMAIL_SEND_FAILED', { cause: error })
-}
+50+ notification types for NFT marketplace events:
+- Auction events: `AUCTION_STARTED`, `AUCTION_ENDING_SOON`, `AUCTION_WON`, `AUCTION_OUTBID`
+- Trading: `BID_PLACED`, `OFFER_RECEIVED`, `LISTING_SOLD`
+- Price alerts: `FLOOR_PRICE_DROP`, `PRICE_DROP_ALERT`, `TARGET_PRICE_REACHED`
+- Drops: `DROP_ANNOUNCED`, `DROP_LIVE`, `WHITELIST_APPROVED`
+- Social: `USER_FOLLOWED`, `COLLECTION_FOLLOWED`
+- System: `WELCOME`, `EMAIL_VERIFICATION`, `SECURITY_ALERT`
 
-// ❌ BAD: Never use console.log
-console.log('Email sent') // NEVER DO THIS
+See `src/infrastructure/database/prisma/schema.prisma` for complete list.
 
-// ❌ BAD: Don't swallow errors
-try {
-  await sendEmail(notification)
-} catch (error) {
-  // Silent failure - BAD!
-}
-```
+### Important Indexes
 
-### Logging
+- `notifications`: Indexed on `[organizationId, userId, createdAt]`, `[status, createdAt]`, `[nextRetryAt]`
+- `outbox`: Indexed on `[status, scheduledAt]`, `[lockedAt, lockedBy]` for worker polling
+- `templates`: Indexed on `[organizationId, slug, version]` for version lookups
 
-```typescript
-// Use structured logging with correlation IDs
-logger.info('Notification created', {
-  correlationId: request.correlationId,
-  notificationId: notification.id,
-  userId: user.id,
-  channel: notification.channel
-})
+## Environment Variables
 
-// Never use console.log, console.error, etc.
-```
-
----
-
-## Key Technologies & Patterns
-
-### Database (Prisma + PostgreSQL)
-
-**Key Models**:
-- `Organization`: Multi-tenant isolation
-- `User`: User accounts (Better-Auth managed)
-- `Notification`: Notification records
-- `Outbox`: Outbox pattern table
-- `Template`: Email/notification templates
-- `UserPreference`: User notification preferences
-- `DeliveryAttempt`: Retry tracking
-- `AuditLog`: Compliance & debugging
-
-**Indexing Strategy**:
-```prisma
-// Optimize for common queries
-@@index([organizationId, userId, createdAt]) // User notifications
-@@index([status, scheduledAt])               // Outbox polling
-@@index([channel, status, createdAt])        // Channel analytics
-```
-
-**Transactions**:
-```typescript
-// Always use transactions for outbox writes
-await prisma.$transaction(async (tx) => {
-  await tx.notification.create({ data })
-  await tx.outbox.create({ data })
-})
-```
-
-### Authentication (Better-Auth)
-
-```typescript
-// Organization-based multi-tenancy
-const session = await auth.getSession()
-const organizationId = session.user.organizationId
-
-// ALWAYS filter queries by organizationId
-await prisma.notification.findMany({
-  where: {
-    organizationId, // Required for data isolation
-    userId
-  }
-})
-```
-
-### Channels
-
-All channels implement `IChannel` interface:
-```typescript
-export interface IChannel {
-  readonly name: ChannelType
-  send(notification: ChannelNotification): Promise<ChannelResult>
-  validatePayload(payload: unknown): Result<ChannelNotification>
-  healthCheck(): Promise<boolean>
-}
-```
-
-**Supported Channels**:
-- **Email**: Resend (prod), Mailpit (dev)
-- **WebSocket**: Real-time notifications
-- **Push**: Firebase (future)
-- **SMS**: Twilio (future)
-
----
-
-## Common Tasks for AI Assistants
-
-### Task: Add a New Notification Type
-
-1. **Update domain enum**:
-   ```typescript
-   // src/core/domain/types/notification.types.ts
-   export enum NotificationType {
-     AUCTION_WON = 'auction_won',
-     BID_PLACED = 'bid_placed',
-     NEW_LISTING = 'new_listing', // ← Add here
-   }
-   ```
-
-2. **Update Prisma schema**:
-   ```prisma
-   enum NotificationType {
-     AUCTION_WON
-     BID_PLACED
-     NEW_LISTING  // ← Add here
-   }
-   ```
-
-3. **Create migration**:
-   ```bash
-   pnpm db:migrate:dev --name add_new_listing_type
-   ```
-
-4. **Add template** (if email):
-   ```typescript
-   // src/infrastructure/channels/email/templates/new-listing.tsx
-   ```
-
-### Task: Add a New API Endpoint
-
-1. **Create use case** (Application Layer):
-   ```typescript
-   // src/core/use-cases/notifications/your-use-case.use-case.ts
-   export class YourUseCase {
-     async execute(input: YourInput): Promise<YourOutput> {
-       // Business logic here
-     }
-   }
-   ```
-
-2. **Create API route** (Presentation Layer):
-   ```typescript
-   // src/app/api/notifications/your-endpoint/route.ts
-   import { YourUseCase } from '@/core/use-cases/notifications/your-use-case.use-case'
-
-   export async function POST(request: Request) {
-     // Validate, authenticate, execute use case
-   }
-   ```
-
-3. **Add tests**:
-   ```typescript
-   // tests/unit/core/use-cases/notifications/your-use-case.test.ts
-   // tests/integration/api/notifications/your-endpoint.test.ts
-   ```
-
-### Task: Add Database Migration
-
-```bash
-# 1. Update prisma/schema.prisma
-# 2. Create migration
-pnpm db:migrate:dev --name descriptive_name
-
-# 3. Apply to production (when ready)
-pnpm db:migrate:deploy
-```
-
-### Task: Debug Outbox Processing
-
-```typescript
-// Check outbox status
-const pending = await prisma.outbox.findMany({
-  where: { status: 'pending' },
-  orderBy: { createdAt: 'asc' }
-})
-
-// Check delivery attempts
-const attempts = await prisma.deliveryAttempt.findMany({
-  where: { notificationId: 'xyz' },
-  orderBy: { attemptedAt: 'desc' }
-})
-
-// Check worker logs
-logger.debug('Outbox processing', {
-  batchSize: pending.length,
-  oldestPending: pending[0]?.createdAt
-})
-```
-
----
-
-## Testing Strategy
-
-### Test Pyramid
-
-```
-       E2E (10%)
-      /         \
-     /           \
-    / Integration \
-   /     (20%)     \
-  /                 \
- /_____Unit (70%)____\
-```
-
-### Test Locations
-
-```
-tests/
-├── unit/                      # Unit tests (70% of tests)
-│   ├── core/
-│   │   ├── entities/
-│   │   ├── use-cases/
-│   │   └── services/
-│   └── lib/utils/
-├── integration/               # Integration tests (20%)
-│   ├── api/
-│   └── repositories/
-└── e2e/                       # E2E tests (10%)
-    └── critical-flows/
-```
-
-### Test Naming
-
-```typescript
-// Pattern: describe what, test should/when/given
-describe('SendNotificationUseCase', () => {
-  it('should create notification and outbox entry in transaction', async () => {
-    // Arrange, Act, Assert
-  })
-
-  it('should reject when user preferences are disabled', async () => {
-    // Test
-  })
-})
-```
-
-### Coverage Requirements
-
-- **Minimum**: 80% overall
-- **Critical paths**: 100% (outbox, retry, payment flows)
-
----
-
-## Environment & Configuration
-
-### Required Environment Variables
+**Required for development** (see `.env.example`):
 
 ```bash
 # Database
-DATABASE_URL="postgresql://..."
+DATABASE_URL="postgresql://..."        # NeonDB or local PostgreSQL
 
-# Authentication
-BETTER_AUTH_SECRET="..."          # 32+ chars
+# Auth
+BETTER_AUTH_SECRET="..."               # Min 32 chars
 BETTER_AUTH_URL="http://localhost:3000"
 
 # Email
-RESEND_API_KEY="re_..."           # Production
-MAILPIT_SMTP_HOST="localhost"     # Local dev
+RESEND_API_KEY="re_..."                # Production (Resend)
+MAILPIT_SMTP_HOST="localhost"          # Dev (Mailpit in Docker)
 MAILPIT_SMTP_PORT="1025"
 
-# Cache & Rate Limiting
+# Cache
 REDIS_URL="redis://localhost:6379"
 
 # Application
 NODE_ENV="development"
-PORT="3000"
 LOG_LEVEL="debug"
 
 # Feature Flags
@@ -573,267 +308,169 @@ ENABLE_PUSH="false"
 ENABLE_SMS="false"
 ```
 
-### Local Development Services
+**CI/CD Note**: Set `SKIP_ENV_VALIDATION=true` in CI to allow builds with dummy env vars.
 
-```bash
-# Start Docker services
-pnpm docker:up
+## TypeScript Configuration
 
-# Services:
-# - PostgreSQL: localhost:5432
-# - Redis: localhost:6379
-# - Mailpit UI: localhost:8025
+- **Strict mode** enabled
+- **Path aliases**:
+  - `@/*` → `src/*`
+  - `@/core/*` → `src/core/*`
+  - `@/infrastructure/*` → `src/infrastructure/*`
+- **Target**: ES2022
+- **Module resolution**: bundler (Next.js)
+- Prisma Client auto-generated to `src/infrastructure/database/generated/`
+
+## Git Workflow
+
+**Branch Strategy**:
+```
+main (production)
+└── develop (integration)
+    ├── feature/* (new features)
+    ├── fix/* (bug fixes)
+    └── develop-claude/** (Claude Code branches)
 ```
 
----
+**Conventional Commits**:
+```
+feat(notifications): add batch send API
+fix(email): resolve template rendering bug
+chore(deps): update Prisma to 6.1.0
+docs(readme): update setup instructions
+```
 
-## Performance Considerations
+**CI Pipeline** (`.github/workflows/ci.yml`):
+1. **Lint** → `pnpm lint`
+2. **Typecheck** → `pnpm db:generate && pnpm typecheck`
+3. **Test** → `pnpm db:generate && pnpm test:ci`
+4. **Build** → `pnpm db:generate && pnpm build` (with `SKIP_ENV_VALIDATION=true`)
 
-### Database Optimization
+All checks must pass before merge.
 
-1. **Use indexes** for all frequent queries
-2. **Avoid N+1 queries** - use `include` or `select`
-3. **Paginate large result sets** (max 100 records)
-4. **Use connection pooling** (configured in Prisma)
+## Development Workflow
 
-### Caching Strategy
+### Starting Development
+
+1. Start Docker services: `pnpm docker:up`
+2. Run migrations: `pnpm db:migrate`
+3. Generate Prisma Client: `pnpm db:generate`
+4. Start dev server: `pnpm dev`
+5. (Optional) Seed data: `pnpm db:seed`
+
+### Making Database Changes
+
+1. Edit `src/infrastructure/database/prisma/schema.prisma`
+2. Run `pnpm db:migrate` (creates migration + applies)
+3. Run `pnpm db:generate` (updates Prisma Client)
+4. Commit both schema and migration files
+
+### Testing Email Locally
+
+- Mailpit runs on `http://localhost:8025` (Docker)
+- All emails sent in development are captured (no real sending)
+- View emails in Mailpit UI
+
+### Adding New Notification Type
+
+1. Add type to `NotificationType` enum in `schema.prisma`
+2. Run `pnpm db:migrate`
+3. Create template (if needed) in database or via API
+4. Use in notification send payload
+
+## Common Patterns
+
+### Creating Notifications with Use Case
 
 ```typescript
-// Use Redis for:
-// 1. Rate limiting (token bucket)
-// 2. Idempotency keys (24-hour TTL)
-// 3. Session storage (Better-Auth)
-// 4. User preferences (5-minute TTL)
+// src/core/use-cases/notifications/send-notification.use-case.ts
+import { SendNotificationUseCase } from '@/core/use-cases/notifications/send-notification.use-case'
 
-await redis.setex(`cache:preferences:${userId}`, 300, JSON.stringify(prefs))
+const useCase = new SendNotificationUseCase()
+const notification = await useCase.execute({
+  organizationId: 'org-123',
+  userId: 'user-456',
+  type: 'AUCTION_ENDING_SOON',
+  channel: 'EMAIL',
+  templateSlug: 'auction-ending-soon',
+  payload: { auctionTitle: 'CryptoPunk #123', endTime: '2025-01-10T12:00:00Z' },
+  idempotencyKey: 'auction-123-reminder',
+})
 ```
 
-### Rate Limiting
+### Accessing Prisma
 
 ```typescript
-// Per-channel limits
-email: 1000/hour per organization
-websocket: unlimited (connection-based)
-sms: 100/hour per organization
-push: 10000/hour per organization
+import { prisma } from '@/infrastructure/database/prisma'
+
+const notifications = await prisma.notification.findMany({
+  where: { organizationId: 'org-123' },
+  include: { user: true, template: true },
+})
 ```
-
----
-
-## Security Checklist
-
-When implementing features, ensure:
-
-- [ ] Input validation with Zod schemas
-- [ ] Authentication via Better-Auth middleware
-- [ ] Authorization checks (organizationId filtering)
-- [ ] SQL injection prevention (Prisma handles this)
-- [ ] XSS prevention (React escapes by default)
-- [ ] Rate limiting on API endpoints
-- [ ] Secrets in environment variables (never hardcoded)
-- [ ] Audit logging for sensitive operations
-- [ ] HTTPS/TLS for all external communication
-
----
-
-## Observability
 
 ### Logging
 
 ```typescript
-// Use correlation IDs to trace requests
-logger.info('Processing notification', {
-  correlationId: req.correlationId,
-  notificationId: notification.id,
-  userId: user.id,
-  channel: notification.channel
-})
+import { logger } from '@/lib/logger/logger'
+
+logger.info('Notification sent', { notificationId: '123', channel: 'EMAIL' })
+logger.error('Failed to send', { error: err.message, correlationId })
 ```
 
-### Metrics to Track
+**Never use `console.log`** - always use `logger`.
 
-- Notification send rate (per channel)
-- Delivery success rate
-- Retry rate
-- Outbox queue depth
-- API latency (P50, P95, P99)
-- Error rate by type
+## Troubleshooting
 
-### Health Checks
-
-```typescript
-// GET /api/health
-{
-  "status": "healthy",
-  "timestamp": "2025-11-15T12:34:56.789Z",
-  "checks": {
-    "database": "healthy",
-    "cache": "healthy",
-    "email": "healthy",
-    "websocket": "healthy"
-  }
-}
+### Prisma Client Not Found
+```bash
+pnpm db:generate
 ```
 
----
+### Docker Services Won't Start
+```bash
+pnpm docker:down
+pnpm docker:up
+```
 
-## Documentation References
+### Type Errors After Schema Change
+```bash
+pnpm db:generate
+pnpm typecheck
+```
 
-### Must-Read Documents
+### Build Fails with Env Validation
+Set `SKIP_ENV_VALIDATION=true` for CI builds only.
 
-1. **[docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md)** - System architecture (READ FIRST)
-2. **[docs/03-DATABASE-SCHEMA.md](./docs/03-DATABASE-SCHEMA.md)** - Complete database schema
-3. **[docs/05-DIRECTORY-STRUCTURE.md](./docs/05-DIRECTORY-STRUCTURE.md)** - Code organization
-4. **[docs/30-GIT-WORKFLOW.md](./docs/30-GIT-WORKFLOW.md)** - Branch strategy & commits
-5. **[docs/31-PHASE-1-FOUNDATION.md](./docs/31-PHASE-1-FOUNDATION.md)** - Implementation guide
+## Important Notes
 
-### Reference Documents
+1. **Prisma schema location**: `src/infrastructure/database/prisma/schema.prisma` (NOT `prisma/schema.prisma`)
+2. **Prisma Client output**: `src/infrastructure/database/generated/` (configured in schema)
+3. **Better Auth config**: `src/lib/auth/better-auth.ts` (not `auth.ts`)
+4. **Always use transactions** for notification creation (via `OutboxRepository.createWithNotification`)
+5. **Idempotency**: Use `idempotencyKey` to prevent duplicate sends
+6. **Rate limiting**: Configured per-organization, per-channel in `RateLimitConfig` table
+7. **Correlation IDs**: Generated with `nanoid()` for request tracing
+8. **Feature flags**: Use env vars (`ENABLE_WEBSOCKET`, etc.) to toggle channels
 
-- **[README.md](./README.md)** - Public-facing documentation
-- **[DOCUMENTATION-SUMMARY.md](./DOCUMENTATION-SUMMARY.md)** - Overview of all docs
-- **[docs/00-INDEX.md](./docs/00-INDEX.md)** - Master index of 38 documentation files
+## Testing Strategy
 
----
+- **Unit tests**: Use cases, domain entities, value objects
+- **Integration tests**: API routes, database operations
+- **Test utilities**: Located in `tests/setup/`
+- **Coverage target**: ≥80%
+- **CI**: Tests must pass with `--passWithNoTests` flag
 
-## Common Pitfalls to Avoid
+## Worker Architecture (Future)
 
-### ❌ DON'T
-
-1. **Skip transactions** when writing to outbox
-   ```typescript
-   // ❌ BAD - Notification and outbox created separately
-   await prisma.notification.create({ data })
-   await prisma.outbox.create({ data }) // Could fail after notification created!
-   ```
-
-2. **Forget organizationId filtering**
-   ```typescript
-   // ❌ BAD - Leaks data across organizations
-   await prisma.notification.findMany({
-     where: { userId }
-   })
-   ```
-
-3. **Use console.log** for logging
-   ```typescript
-   // ❌ BAD
-   console.log('Email sent')
-
-   // ✅ GOOD
-   logger.info('Email sent', { notificationId })
-   ```
-
-4. **Violate layer dependencies**
-   ```typescript
-   // ❌ BAD - Domain importing from Infrastructure
-   import { prisma } from '@/infrastructure/database/prisma'
-   ```
-
-5. **Hardcode secrets**
-   ```typescript
-   // ❌ BAD
-   const apiKey = 're_abc123'
-
-   // ✅ GOOD
-   const apiKey = process.env.RESEND_API_KEY
-   ```
-
-### ✅ DO
-
-1. **Use transactions** for outbox writes
-2. **Always filter by organizationId** for multi-tenancy
-3. **Use structured logging** with correlation IDs
-4. **Follow Clean Architecture** layer dependencies
-5. **Validate all inputs** with Zod schemas
-6. **Write tests** for all business logic
-7. **Add comments** explaining "why", not "what"
-8. **Use TypeScript strict mode** (no `any`)
-
----
-
-## Quick Reference Commands
+Background workers will run as separate processes:
 
 ```bash
-# Development
-pnpm dev                  # Start Next.js dev server
-pnpm workers              # Start background workers
-pnpm docker:up            # Start PostgreSQL, Redis, Mailpit
-
-# Database
-pnpm db:generate          # Generate Prisma client
-pnpm db:migrate:dev       # Create & apply migration
-pnpm db:studio            # Open Prisma Studio GUI
-pnpm db:seed              # Seed test data
-pnpm db:reset             # Reset database (destructive!)
-
-# Testing
-pnpm test                 # Run tests in watch mode
-pnpm test:ci              # Run tests with coverage
-pnpm test:e2e             # Run E2E tests
-
-# Code Quality
-pnpm typecheck            # TypeScript type checking
-pnpm lint                 # ESLint
-pnpm lint:fix             # Auto-fix linting issues
-pnpm format               # Prettier formatting
-
-# Pre-push (MUST PASS)
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-
-# Git
-git checkout develop && git pull
-git checkout -b feature/NOT-123-description
-git commit -m "feat(scope): description"
-git push origin feature/NOT-123-description
+# Future commands (not yet implemented)
+pnpm workers              # Start all workers
+pnpm worker:outbox        # Outbox processor only
+pnpm worker:retry         # Retry processor only
+pnpm worker:scheduler     # Scheduled notifications only
 ```
 
----
-
-## AI Assistant Tips
-
-### When Asked to Add a Feature
-
-1. **Read architecture docs first** (especially docs/02-ARCHITECTURE.md)
-2. **Follow Clean Architecture** layers strictly
-3. **Check existing patterns** before inventing new ones
-4. **Write tests** alongside implementation
-5. **Update documentation** if behavior changes
-6. **Use conventional commits** for all commits
-
-### When Debugging
-
-1. **Check outbox status** first (most issues are delivery-related)
-2. **Look at delivery attempts** for retry history
-3. **Search logs** using correlation IDs
-4. **Verify user preferences** (user may have opted out)
-5. **Check rate limits** (may be throttled)
-
-### When Reviewing Code
-
-1. **Verify layer dependencies** (Domain must be pure)
-2. **Check transaction usage** (outbox writes must be transactional)
-3. **Ensure organizationId filtering** (multi-tenancy)
-4. **Validate input schemas** (Zod validation present)
-5. **Look for hardcoded values** (should be in env or constants)
-
----
-
-## Contact & Support
-
-For questions about this codebase:
-
-1. **Documentation Issues**: Check [docs/36-TROUBLESHOOTING.md](./docs/36-TROUBLESHOOTING.md) (when created)
-2. **Architecture Questions**: Read [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md)
-3. **Setup Issues**: Follow [docs/04-PROJECT-SETUP.md](./docs/04-PROJECT-SETUP.md)
-
----
-
-## Version History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2025-11-15 | Initial CLAUDE.md creation |
-
----
-
-**Remember**: This project uses Clean Architecture. Keep domain logic pure, respect layer boundaries, and always use the outbox pattern for reliable delivery. When in doubt, check the documentation in `docs/`.
+Workers poll database tables and process entries concurrently.

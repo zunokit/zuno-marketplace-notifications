@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del tailwind.config.ts)",
+      "Bash(pnpm install)",
+      "Bash(pnpm list:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm dev)",
+      "Bash(del \"E:\\zuno-marketplace-notifications\\src\\middleware.ts\")",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm test:ci:*)",
+      "Bash(pnpm lint:fix:*)",
+      "Bash(next lint --help:*)",
+      "Bash(pnpm exec next lint --help:*)",
+      "Bash(pnpm exec next --help:*)",
+      "Bash(pnpm add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "outputStyle": "Explanatory"
+}
