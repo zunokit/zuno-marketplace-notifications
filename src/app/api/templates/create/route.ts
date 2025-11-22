@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { prisma } from '@/infrastructure/database/prisma'
 import { logger } from '@/lib/logger/logger'
+import { withAuth } from '@/lib/api/route-handler'
 
 const CreateTemplateSchema = z.object({
   name: z.string().min(1),
@@ -27,24 +28,24 @@ const CreateTemplateSchema = z.object({
   replyTo: z.string().email().optional(),
 })
 
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, { user, organization }) => {
   try {
     const body = await request.json()
     const validated = CreateTemplateSchema.parse(body)
 
-    // TODO: Get from auth session
-    const defaultOrgId = 'default-org-id'
-    const createdBy = 'default-user-id'
-
     const template = await prisma.template.create({
       data: {
         ...validated,
-        organizationId: defaultOrgId,
-        createdBy,
+        organizationId: organization.id, // ✅ From authenticated context
+        createdBy: user.id,
       },
     })
 
-    logger.info('Template created', { templateId: template.id })
+    logger.info('Template created', {
+      templateId: template.id,
+      organizationId: organization.id,
+      userId: user.id,
+    })
 
     return NextResponse.json(template, { status: 201 })
   } catch (error) {
@@ -63,4 +64,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
