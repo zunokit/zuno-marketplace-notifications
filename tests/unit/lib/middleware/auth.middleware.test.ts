@@ -2,19 +2,12 @@
  * Authentication Middleware Tests
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { authenticate, requireAuthentication } from '@/lib/middleware/auth.middleware'
 import { auth } from '@/lib/auth/better-auth'
 import { prisma } from '@/infrastructure/database/prisma'
-
-// Mock NextRequest for Jest environment
-const createMockRequest = () => ({
-  headers: new Headers(),
-  nextUrl: {
-    pathname: '/api/test',
-  },
-  method: 'POST',
-  url: 'http://localhost:3000/api/test',
-})
+import { NextRequest } from 'next/server'
 
 // Mock dependencies
 jest.mock('@/lib/auth/better-auth', () => ({
@@ -42,8 +35,23 @@ jest.mock('@/lib/logger/logger', () => ({
   },
 }))
 
+// Helper to create mock request
+const createMockRequest = (): NextRequest =>
+  ({
+    headers: new Headers(),
+    nextUrl: {
+      pathname: '/api/test',
+    },
+    method: 'POST',
+    url: 'http://localhost:3000/api/test',
+  }) as any
+
+// Typed mock helpers
+const mockGetSession = auth.api.getSession as unknown as jest.Mock
+const mockFindFirst = prisma.organizationMember.findFirst as unknown as jest.Mock
+
 describe('authenticate', () => {
-  let mockRequest: ReturnType<typeof createMockRequest>
+  let mockRequest: NextRequest
 
   beforeEach(() => {
     mockRequest = createMockRequest()
@@ -51,7 +59,7 @@ describe('authenticate', () => {
   })
 
   it('returns null when no session exists', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue(null)
+    mockGetSession.mockResolvedValue(null)
 
     const result = await authenticate(mockRequest)
 
@@ -59,7 +67,7 @@ describe('authenticate', () => {
   })
 
   it('returns null when session is invalid', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue({
+    mockGetSession.mockResolvedValue({
       user: null,
       session: null,
     })
@@ -70,7 +78,7 @@ describe('authenticate', () => {
   })
 
   it('returns null when user has no organization membership', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue({
+    mockGetSession.mockResolvedValue({
       user: {
         id: 'user-123',
         email: 'test@example.com',
@@ -83,7 +91,7 @@ describe('authenticate', () => {
       },
     })
 
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue(null)
+    mockFindFirst.mockResolvedValue(null)
 
     const result = await authenticate(mockRequest)
 
@@ -91,7 +99,7 @@ describe('authenticate', () => {
   })
 
   it('returns null when organization is inactive', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue({
+    mockGetSession.mockResolvedValue({
       user: {
         id: 'user-123',
         email: 'test@example.com',
@@ -104,7 +112,7 @@ describe('authenticate', () => {
       },
     })
 
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue({
+    mockFindFirst.mockResolvedValue({
       organizationId: 'org-123',
       role: 'OWNER',
       organization: {
@@ -145,8 +153,8 @@ describe('authenticate', () => {
       },
     }
 
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue(mockSession)
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue(mockMembership)
+    mockGetSession.mockResolvedValue(mockSession)
+    mockFindFirst.mockResolvedValue(mockMembership)
 
     const result = await authenticate(mockRequest)
 
@@ -171,7 +179,7 @@ describe('authenticate', () => {
   })
 
   it('handles null user name gracefully', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue({
+    mockGetSession.mockResolvedValue({
       user: {
         id: 'user-123',
         email: 'test@example.com',
@@ -184,7 +192,7 @@ describe('authenticate', () => {
       },
     })
 
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue({
+    mockFindFirst.mockResolvedValue({
       organizationId: 'org-123',
       role: 'VIEWER',
       organization: {
@@ -202,7 +210,7 @@ describe('authenticate', () => {
   })
 
   it('returns null and logs error on database failure', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue({
+    mockGetSession.mockResolvedValue({
       user: {
         id: 'user-123',
         email: 'test@example.com',
@@ -215,9 +223,7 @@ describe('authenticate', () => {
       },
     })
 
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockRejectedValue(
-      new Error('Database connection failed')
-    )
+    mockFindFirst.mockRejectedValue(new Error('Database connection failed'))
 
     const result = await authenticate(mockRequest)
 
@@ -225,7 +231,7 @@ describe('authenticate', () => {
   })
 
   it('queries organization membership with correct parameters', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue({
+    mockGetSession.mockResolvedValue({
       user: {
         id: 'user-123',
         email: 'test@example.com',
@@ -238,7 +244,7 @@ describe('authenticate', () => {
       },
     })
 
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue({
+    mockFindFirst.mockResolvedValue({
       organizationId: 'org-123',
       role: 'ADMIN',
       organization: {
@@ -251,7 +257,7 @@ describe('authenticate', () => {
 
     await authenticate(mockRequest)
 
-    expect(prisma.organizationMember.findFirst).toHaveBeenCalledWith({
+    expect(mockFindFirst).toHaveBeenCalledWith({
       where: {
         userId: 'user-123',
       },
@@ -273,7 +279,7 @@ describe('authenticate', () => {
 })
 
 describe('requireAuthentication', () => {
-  let mockRequest: ReturnType<typeof createMockRequest>
+  let mockRequest: NextRequest
 
   beforeEach(() => {
     mockRequest = createMockRequest()
@@ -281,7 +287,7 @@ describe('requireAuthentication', () => {
   })
 
   it('throws error when authentication fails', async () => {
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue(null)
+    mockGetSession.mockResolvedValue(null)
 
     await expect(requireAuthentication(mockRequest)).rejects.toThrow(
       'Unauthorized: Valid session required'
@@ -313,8 +319,8 @@ describe('requireAuthentication', () => {
       },
     }
 
-    ;(auth.api.getSession as jest.Mock).mockResolvedValue(mockSession)
-    ;(prisma.organizationMember.findFirst as jest.Mock).mockResolvedValue(mockMembership)
+    mockGetSession.mockResolvedValue(mockSession)
+    mockFindFirst.mockResolvedValue(mockMembership)
 
     const result = await requireAuthentication(mockRequest)
 
