@@ -15,7 +15,7 @@ import { withAuthorization } from '@/lib/api/with-authorization'
 export const GET = withAuth(
   withAuthorization(
     { resource: 'notification', action: 'read' },
-    async (request, context, params: { id: string }) => {
+    async (_request, context, params: { id: string }) => {
       try {
         const notification = await prisma.notification.findUnique({
           where: { id: params.id },

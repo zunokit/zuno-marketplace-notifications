@@ -45,7 +45,7 @@ export function withAuth<TParams = unknown>(
 ) {
   return async (
     request: NextRequest,
-    routeParams?: RouteParams<TParams>
+    routeParams?: RouteParams<TParams> | { params: Promise<TParams> }
   ): Promise<NextResponse> => {
     const correlationId = nanoid()
     const startTime = Date.now()
@@ -78,11 +78,22 @@ export function withAuth<TParams = unknown>(
         method: request.method,
       })
 
+      // Handle both sync and async params (Next.js 15 vs 16)
+      let params: TParams | undefined
+      if (routeParams) {
+        if ('params' in routeParams) {
+          // Check if params is a Promise (Next.js 16)
+          params = routeParams.params instanceof Promise
+            ? await routeParams.params
+            : routeParams.params
+        }
+      }
+
       // Call the actual handler with auth context
       const response = await handler(
         request,
         authContext,
-        routeParams?.params as TParams
+        params as TParams
       )
 
       const duration = Date.now() - startTime
