@@ -1,40 +1,67 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { z } from 'zod'
 
 import { SendNotificationUseCase } from '@/core/use-cases/notifications/send-notification.use-case'
 import { logger } from '@/lib/logger/logger'
+import { withAuth } from '@/lib/api/route-handler'
+import { NotificationType, Channel, Priority } from '@/infrastructure/database/generated'
 
 const BatchSendSchema = z.object({
   notifications: z.array(
     z.object({
       userId: z.string().uuid(),
-      type: z.enum([
-        'WELCOME',
-        'AUCTION_WON',
-        'BID_PLACED',
-        'EMAIL_VERIFICATION',
-        'CUSTOM',
-      ]),
-      channel: z.enum(['EMAIL', 'WEBSOCKET', 'PUSH', 'SMS']),
+      type: z.nativeEnum(NotificationType),
+      channel: z.nativeEnum(Channel),
       templateSlug: z.string().optional(),
       payload: z.record(z.unknown()),
-      priority: z.enum(['LOW', 'NORMAL', 'HIGH', 'URGENT']).default('NORMAL'),
+      priority: z.nativeEnum(Priority).default('NORMAL'),
     })
   ),
 })
 
-export async function POST(request: NextRequest) {
+/**
+ * Send multiple notifications in batch
+ *
+ * @route POST /api/notifications/batch
+ * @access Authenticated users
+ *
+ * @example
+ * ```json
+ * {
+ *   "notifications": [
+ *     {
+ *       "userId": "user-1",
+ *       "type": "AUCTION_WON",
+ *       "channel": "EMAIL",
+ *       "payload": { "auctionTitle": "CryptoPunk #123" }
+ *     },
+ *     {
+ *       "userId": "user-2",
+ *       "type": "BID_PLACED",
+ *       "channel": "WEBSOCKET",
+ *       "payload": { "bidAmount": "5 ETH" }
+ *     }
+ *   ]
+ * }
+ * ```
+ */
+export const POST = withAuth(async (request, { user, organization }) => {
   try {
     const body = await request.json()
     const validated = BatchSendSchema.parse(body)
 
-    const defaultOrgId = 'default-org-id'
+    logger.info('Processing batch notification send', {
+      userId: user.id,
+      organizationId: organization.id,
+      count: validated.notifications.length,
+    })
+
     const useCase = new SendNotificationUseCase()
 
     const results = await Promise.allSettled(
       validated.notifications.map((notif) =>
         useCase.execute({
-          organizationId: defaultOrgId,
+          organizationId: organization.id, // ✅ From authenticated context
           userId: notif.userId,
           type: notif.type,
           channel: notif.channel,
@@ -48,7 +75,12 @@ export async function POST(request: NextRequest) {
     const successful = results.filter((r) => r.status === 'fulfilled').length
     const failed = results.filter((r) => r.status === 'rejected').length
 
-    logger.info('Batch send completed', { successful, failed })
+    logger.info('Batch send completed', {
+      organizationId: organization.id,
+      total: validated.notifications.length,
+      successful,
+      failed,
+    })
 
     return NextResponse.json({
       total: validated.notifications.length,
@@ -77,4 +109,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     )
   }
-}
+})
