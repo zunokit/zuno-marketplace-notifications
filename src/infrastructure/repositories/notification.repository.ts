@@ -1,34 +1,67 @@
 import { prisma } from '@/infrastructure/database/prisma'
-import { Prisma } from '@/infrastructure/database/prisma'
+import {
+  Prisma,
+  NotificationType,
+  Channel,
+  NotificationStatus,
+  Priority,
+  Notification,
+} from '@/infrastructure/database/generated'
 
+/**
+ * Input for creating a notification
+ */
+export interface CreateNotificationInput {
+  organizationId: string
+  userId: string
+  type: NotificationType
+  channel: Channel
+  templateId?: string
+  status?: NotificationStatus
+  priority?: Priority
+  payload: Prisma.JsonValue
+  idempotencyKey?: string
+  correlationId?: string
+  metadata?: Prisma.JsonValue
+  scheduledAt?: Date
+}
+
+/**
+ * Repository for notification database operations
+ *
+ * Provides type-safe database access using Prisma generated types.
+ * All methods use proper TypeScript types without `any` assertions.
+ */
 export class NotificationRepository {
   /**
-   * Create notification with idempotency check
+   * Create notification with proper type safety
+   *
+   * @param data - Notification data with type-safe enum values
+   * @returns Created notification entity
+   *
+   * @example
+   * ```typescript
+   * const notification = await repository.create({
+   *   organizationId: 'org-123',
+   *   userId: 'user-456',
+   *   type: 'AUCTION_WON',
+   *   channel: 'EMAIL',
+   *   priority: 'HIGH',
+   *   payload: { auctionTitle: 'CryptoPunk #123' }
+   * })
+   * ```
    */
-  async create(data: {
-    organizationId: string
-    userId: string
-    type: string
-    channel: string
-    templateId?: string
-    status?: string
-    priority?: string
-    payload: Record<string, unknown>
-    idempotencyKey?: string
-    correlationId?: string
-    metadata?: Record<string, unknown>
-    scheduledAt?: Date
-  }) {
+  async create(data: CreateNotificationInput): Promise<Notification> {
     return await prisma.notification.create({
       data: {
-        type: data.type as any,
-        channel: data.channel as any,
-        status: (data.status as any) || 'PENDING',
-        priority: (data.priority as any) || 'NORMAL',
-        payload: data.payload as any,
+        type: data.type,
+        channel: data.channel,
+        status: data.status || 'PENDING',
+        priority: data.priority || 'NORMAL',
+        payload: data.payload,
         idempotencyKey: data.idempotencyKey,
         correlationId: data.correlationId,
-        metadata: data.metadata as any,
+        metadata: data.metadata || Prisma.JsonNull,
         scheduledAt: data.scheduledAt,
         organizationId: data.organizationId,
         userId: data.userId,
@@ -68,45 +101,61 @@ export class NotificationRepository {
 
   /**
    * Update notification status
+   *
+   * @param id - Notification ID
+   * @param status - New status (type-safe enum)
+   * @param updates - Optional timestamp updates
+   * @returns Updated notification
    */
   async updateStatus(
     id: string,
-    status: string,
+    status: NotificationStatus,
     updates?: {
       sentAt?: Date
       deliveredAt?: Date
       failedAt?: Date
       lastError?: string
     }
-  ) {
+  ): Promise<Notification> {
     return await prisma.notification.update({
       where: { id },
       data: {
-        status: status as any,
+        status,
         ...updates,
       },
     })
   }
 
   /**
-   * List notifications with filters
+   * List notifications with type-safe filters
+   *
+   * @param params - Filter parameters with type-safe enums
+   * @returns Paginated notification list with total count
    */
   async list(params: {
     organizationId?: string
     userId?: string
-    status?: string
-    channel?: string
-    type?: string
+    status?: NotificationStatus
+    channel?: Channel
+    type?: NotificationType
     limit?: number
     offset?: number
-  }) {
+  }): Promise<{
+    notifications: Array<
+      Notification & {
+        user: { id: string; email: string; name: string | null }
+        organization: { id: string; name: string }
+      }
+    >
+    total: number
+  }> {
     const where: Prisma.NotificationWhereInput = {}
 
     if (params.organizationId) where.organizationId = params.organizationId
     if (params.userId) where.userId = params.userId
-    if (params.status) where.status = params.status as any
-    if (params.channel) where.channel = params.channel as any
-    if (params.type) where.type = params.type as any
+    if (params.status) where.status = params.status
+    if (params.channel) where.channel = params.channel
+    if (params.type) where.type = params.type
 
     const [notifications, total] = await Promise.all([
       prisma.notification.findMany({
@@ -185,12 +234,15 @@ export class NotificationRepository {
   }
 
   /**
-   * Record delivery attempt
+   * Record delivery attempt with type safety
+   *
+   * @param data - Delivery attempt data
+   * @returns Created delivery attempt record
    */
   async recordDeliveryAttempt(data: {
     notificationId: string
     attemptNumber: number
-    channel: string
+    channel: Channel
     provider: string
     success: boolean
     responseCode?: number
@@ -202,7 +254,7 @@ export class NotificationRepository {
       data: {
         notificationId: data.notificationId,
         attemptNumber: data.attemptNumber,
-        channel: data.channel as any,
+        channel: data.channel,
         provider: data.provider,
         success: data.success,
         responseCode: data.responseCode,
