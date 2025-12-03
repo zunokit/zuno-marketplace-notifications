@@ -4,6 +4,7 @@ import { admin, organization } from 'better-auth/plugins'
 
 import { prisma } from '@/infrastructure/database/prisma'
 import { env } from '@/lib/config/env'
+import { logger } from '@/lib/logger/logger'
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -24,7 +25,10 @@ export const auth = betterAuth({
     organization({
       async sendInvitationEmail(data) {
         // TODO: Implement invitation email in Phase 2
-        console.log('Invitation email:', data)
+        logger.info('Organization invitation email requested', {
+          email: data.email,
+          organizationId: data.organization.id,
+        })
       },
     }),
   ],
