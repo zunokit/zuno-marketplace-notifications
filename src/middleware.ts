@@ -33,7 +33,7 @@ const webhookRoutes = [
   '/api/webhooks/nft-listed',
 ]
 
-export default async function authProxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes
@@ -95,7 +95,8 @@ export default async function authProxy(request: NextRequest) {
   if (pathname.startsWith('/admin')) {
     // Check if user has admin role
     // Note: Better Auth admin plugin adds isAdmin to session
-    if (!(session.user as any).isAdmin) {
+    const user = session.user as { id: string; email: string; isAdmin?: boolean }
+    if (!user.isAdmin) {
       return NextResponse.json(
         { error: 'Forbidden', message: 'Admin access required' },
         { status: 403 }
