@@ -6,7 +6,11 @@ export interface TemplateVariables {
   [key: string]: unknown
 }
 
-export class TemplateService {
+/**
+ * Low-level Handlebars template rendering service
+ * Provides template compilation, rendering, and variable extraction utilities
+ */
+export class HandlebarsService {
   private compiledTemplates: Map<string, HandlebarsTemplateDelegate>
 
   constructor() {
@@ -41,9 +45,9 @@ export class TemplateService {
       const compiled = Handlebars.compile(template)
       this.compiledTemplates.set(templateId, compiled)
 
-      logger.info('TemplateService: Template compiled', { templateId })
+      logger.info('HandlebarsService: Template compiled', { templateId })
     } catch (error) {
-      logger.error('TemplateService: Compilation error', {
+      logger.error('HandlebarsService: Compilation error', {
         templateId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
@@ -69,14 +73,14 @@ export class TemplateService {
       // Render template with variables
       const rendered = compiled(variables)
 
-      logger.debug('TemplateService: Template rendered', {
+      logger.debug('HandlebarsService: Template rendered', {
         templateId,
         variableCount: Object.keys(variables).length,
       })
 
       return rendered
     } catch (error) {
-      logger.error('TemplateService: Render error', {
+      logger.error('HandlebarsService: Render error', {
         templateId,
         error: error instanceof Error ? error.message : 'Unknown error',
       })
@@ -120,10 +124,10 @@ export class TemplateService {
   clearCache(templateId?: string): void {
     if (templateId) {
       this.compiledTemplates.delete(templateId)
-      logger.info('TemplateService: Cache cleared for template', { templateId })
+      logger.info('HandlebarsService: Cache cleared for template', { templateId })
     } else {
       this.compiledTemplates.clear()
-      logger.info('TemplateService: All template cache cleared')
+      logger.info('HandlebarsService: All template cache cleared')
     }
   }
 }
