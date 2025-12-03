@@ -3,10 +3,9 @@ import type { Transporter } from 'nodemailer'
 
 import { env } from '@/lib/config/env'
 import { logger } from '@/lib/logger/logger'
+import type { NotificationPayload, IProvider, ProviderSendResult } from '../channel.interface'
 
-import type { ChannelPayload, IChannel, SendResult } from '../base-channel'
-
-export class MailpitProvider implements IChannel {
+export class MailpitProvider implements IProvider {
   private transporter: Transporter
 
   constructor() {
@@ -20,7 +19,7 @@ export class MailpitProvider implements IChannel {
     })
   }
 
-  async send(payload: ChannelPayload): Promise<SendResult> {
+  async send(payload: NotificationPayload): Promise<ProviderSendResult> {
     try {
       const result = await this.transporter.sendMail({
         from: payload.from || 'Zuno Marketplace <noreply@zuno.market>',
@@ -37,7 +36,7 @@ export class MailpitProvider implements IChannel {
       return {
         success: true,
         messageId: result.messageId,
-        metadata: { provider: 'mailpit' },
+        provider: 'mailpit',
       }
     } catch (error) {
       logger.error('Failed to send email via Mailpit', {
