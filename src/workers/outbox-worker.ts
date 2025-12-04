@@ -1,9 +1,14 @@
 import { nanoid } from 'nanoid'
 
-import { EmailChannel } from '@/infrastructure/channels/email/email-channel'
+import { EmailChannel } from '@/infrastructure/channels/email/email.channel'
 import { WebSocketProvider } from '@/infrastructure/channels/websocket/websocket-provider'
 import { OutboxRepository } from '@/infrastructure/outbox/outbox.repository'
 import { logger } from '@/lib/logger/logger'
+import type { Outbox, Notification, Prisma } from '@/infrastructure/database/generated'
+
+type OutboxWithNotification = Outbox & { notification: Notification }
+type EmailPayload = { to: string; subject?: string; body: string; from?: string }
+type WebSocketPayload = { to: string; subject?: string; body: string; metadata?: Record<string, unknown> }
 
 export class OutboxWorker {
   private workerId: string
@@ -88,8 +93,8 @@ export class OutboxWorker {
     }
   }
 
-  private async processEmail(outbox: any) {
-    const payload = outbox.payload as any
+  private async processEmail(outbox: OutboxWithNotification) {
+    const payload = outbox.payload as Prisma.JsonObject as EmailPayload
     const provider = this.emailChannel.getProvider()
 
     const result = await provider.send({
@@ -109,8 +114,8 @@ export class OutboxWorker {
     })
   }
 
-  private async processWebSocket(outbox: any) {
-    const payload = outbox.payload as any
+  private async processWebSocket(outbox: OutboxWithNotification) {
+    const payload = outbox.payload as Prisma.JsonObject as WebSocketPayload
 
     const result = await this.websocketProvider.send({
       to: payload.to,

@@ -1,7 +1,7 @@
 import { nanoid } from 'nanoid'
 import { prisma } from '@/infrastructure/database/prisma'
 import { Prisma } from '@/infrastructure/database/prisma'
-import { EmailChannel } from '@/infrastructure/channels/email/email-channel'
+import { EmailChannel } from '@/infrastructure/channels/email/email.channel'
 import { WebSocketProvider } from '@/infrastructure/channels/websocket/websocket-provider'
 import { logger } from '@/lib/logger/logger'
 

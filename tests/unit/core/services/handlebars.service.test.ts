@@ -20,13 +20,13 @@ jest.mock('@/lib/logger/logger', () => ({
   },
 }))
 
-import { TemplateService } from '@/core/services/template.service'
+import { HandlebarsService } from '@/core/services/handlebars.service'
 
-describe('TemplateService', () => {
-  let service: TemplateService
+describe('HandlebarsService', () => {
+  let service: HandlebarsService
 
   beforeEach(() => {
-    service = new TemplateService()
+    service = new HandlebarsService()
   })
 
   describe('compile', () => {

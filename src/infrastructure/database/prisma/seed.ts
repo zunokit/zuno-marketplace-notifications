@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { PrismaClient } from '@/infrastructure/database/prisma'
 
 const prisma = new PrismaClient()

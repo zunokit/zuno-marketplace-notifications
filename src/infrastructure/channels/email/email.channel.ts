@@ -1,19 +1,37 @@
 import { Channel } from '@/infrastructure/database/prisma'
-
+import { env } from '@/lib/config/env'
+import { logger } from '@/lib/logger/logger'
 import {
   INotificationChannel,
+  IProvider,
   NotificationPayload,
   ChannelDeliveryResult,
 } from '@/infrastructure/channels/channel.interface'
 import { ResendProvider } from './resend.provider'
-import { logger } from '@/lib/logger/logger'
+import { MailpitProvider } from './mailpit-provider'
 
 export class EmailChannel implements INotificationChannel {
   readonly channelType: Channel = 'EMAIL'
-  private provider: ResendProvider
+  private provider: IProvider
 
   constructor() {
-    this.provider = new ResendProvider()
+    // Use Mailpit for development, Resend for production
+    this.provider =
+      env.NODE_ENV === 'production'
+        ? new ResendProvider()
+        : new MailpitProvider()
+
+    logger.info('EmailChannel initialized', {
+      provider: this.provider.getName(),
+      environment: env.NODE_ENV,
+    })
+  }
+
+  /**
+   * Get the underlying provider for direct access (used by workers)
+   */
+  getProvider(): IProvider {
+    return this.provider
   }
 
   validate(payload: NotificationPayload): boolean {
@@ -31,6 +49,8 @@ export class EmailChannel implements INotificationChannel {
   }
 
   async send(payload: NotificationPayload): Promise<ChannelDeliveryResult> {
+    const startTime = Date.now()
+
     if (!this.validate(payload)) {
       return {
         success: false,
@@ -43,9 +63,19 @@ export class EmailChannel implements INotificationChannel {
     logger.info('EmailChannel: Sending email', {
       to: payload.to,
       subject: payload.subject,
+      provider: this.provider.getName(),
     })
 
-    return this.provider.send(payload)
+    const result = await this.provider.send(payload)
+    const duration = Date.now() - startTime
+
+    return {
+      success: result.success,
+      providerMessageId: result.messageId,
+      error: result.error,
+      responseCode: result.success ? 200 : 500,
+      duration,
+    }
   }
 
   private isValidEmail(email: string): boolean {

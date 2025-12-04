@@ -1,9 +1,9 @@
-import { IChannel, ChannelPayload, SendResult } from '@/infrastructure/channels/base-channel'
+import { IProvider, NotificationPayload, ProviderSendResult } from '@/infrastructure/channels/channel.interface'
 import { getWebSocketServer } from '@/infrastructure/websocket/websocket-server'
 import { logger } from '@/lib/logger/logger'
 
-export class WebSocketProvider implements IChannel {
-  async send(payload: ChannelPayload): Promise<SendResult> {
+export class WebSocketProvider implements IProvider {
+  async send(payload: NotificationPayload): Promise<ProviderSendResult> {
     const startTime = Date.now()
 
     try {
