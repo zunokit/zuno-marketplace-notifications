@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import bcrypt from 'bcryptjs'
+import { hashPassword } from 'better-auth/crypto'
 import { nanoid } from 'nanoid'
 import { prisma } from '@/infrastructure/database/prisma'
 import { logger } from '@/lib/logger/logger'
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Generate API key
     const apiKey = `zuno_${nanoid(32)}`
     const keyPrefix = apiKey.substring(0, 8)
-    const keyHash = await bcrypt.hash(apiKey, 10)
+    const keyHash = await hashPassword(apiKey)
 
     // Calculate expiry date
     let expiresAt: Date | null = null

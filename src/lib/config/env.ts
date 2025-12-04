@@ -25,6 +25,10 @@ const envSchema = z.object({
     .string()
     .transform((val) => val === 'true')
     .default('false'),
+  API_KEYS: z
+    .string()
+    .transform((val) => val ? val.split(',').map((k) => k.trim()).filter(Boolean) : [])
+    .default(''),
 })
 
 export type Env = z.infer<typeof envSchema>
