@@ -1,12 +1,16 @@
 import {
   Body,
   Button,
+  Column,
   Container,
   Head,
   Heading,
+  Hr,
   Html,
   Img,
+  Link,
   Preview,
+  Row,
   Section,
   Text,
 } from '@react-email/components'
@@ -20,6 +24,7 @@ interface RoyaltyReceivedEmailProps {
   buyerAddress?: string
   transactionHash?: string
   dashboardUrl?: string
+  collectionName?: string
 }
 
 export const RoyaltyReceivedEmail = ({
@@ -31,84 +36,203 @@ export const RoyaltyReceivedEmail = ({
   buyerAddress,
   transactionHash,
   dashboardUrl,
+  collectionName = 'Collection',
 }: RoyaltyReceivedEmailProps) => {
   return (
     <Html>
       <Head />
-      <Preview>You received {royaltyAmount.toFixed(4)} ETH in royalties from {nftName}</Preview>
+      <Preview>You received {royaltyAmount.toFixed(4)} ETH in royalties from {nftName}!</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>💰 Royalty Payment Received!</Heading>
-
-          {nftImage && (
-            <Img
-              src={nftImage}
-              alt={nftName}
-              style={nftImg}
-            />
-          )}
-
-          <Heading style={h2}>{nftName}</Heading>
-
-          <Section style={amountSection}>
-            <Text style={amountLabel}>You Received</Text>
-            <Text style={amountValue}>{royaltyAmount} ETH</Text>
-            <Text style={amountSubtext}>
-              {royaltyPercentage}% royalty from a {salePrice} ETH sale
-            </Text>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
           </Section>
 
-          <Section style={detailsSection}>
-            <div style={detailRow}>
-              <Text style={detailLabel}>Sale Price:</Text>
-              <Text style={detailValue}>{salePrice} ETH</Text>
+          {/* Success Hero */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <Text style={heroEmoji}>💰</Text>
+              <Heading style={heroTitle}>Royalty Received!</Heading>
+              <Text style={heroSubtitle}>
+                Your creation just sold on the secondary market
+              </Text>
             </div>
-            <div style={detailRow}>
-              <Text style={detailLabel}>Royalty Rate:</Text>
-              <Text style={detailValue}>{royaltyPercentage}%</Text>
+          </Section>
+
+          {/* Royalty Amount Card */}
+          <Section style={amountCardSection}>
+            <div style={amountCard}>
+              <Text style={amountLabel}>You Earned</Text>
+              <Text style={amountValue}>{royaltyAmount.toFixed(4)} ETH</Text>
+              <Text style={amountSubtext}>
+                {royaltyPercentage}% royalty from a {salePrice} ETH sale
+              </Text>
             </div>
-            {buyerAddress && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>Buyer:</Text>
-                <Text style={detailValueSmall}>
-                  {buyerAddress.slice(0, 6)}...{buyerAddress.slice(-4)}
-                </Text>
-              </div>
-            )}
-            {transactionHash && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>Transaction:</Text>
-                <Text style={detailValueSmall}>
-                  {transactionHash.slice(0, 6)}...{transactionHash.slice(-4)}
-                </Text>
-              </div>
+          </Section>
+
+          {/* NFT Info */}
+          <Section style={nftSection}>
+            <Row>
+              <Column style={nftImageColumn}>
+                {nftImage ? (
+                  <Img
+                    src={nftImage}
+                    alt={nftName}
+                    style={nftImageStyle}
+                  />
+                ) : (
+                  <div style={nftPlaceholder}>
+                    <Text style={nftPlaceholderText}>🖼️</Text>
+                  </div>
+                )}
+              </Column>
+              <Column style={nftInfoColumn}>
+                <Text style={nftCollection}>{collectionName}</Text>
+                <Text style={nftTitle}>{nftName}</Text>
+                <Text style={soldLabel}>Sold for</Text>
+                <Text style={soldPrice}>{salePrice} ETH</Text>
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Transaction Details */}
+          <Section style={contentSection}>
+            <Section style={detailsCard}>
+              <Text style={detailsTitle}>Transaction Details</Text>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Sale Price</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={detailValue}>{salePrice} ETH</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Royalty Rate</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={detailValue}>{royaltyPercentage}%</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Your Earnings</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={earningsValue}>{royaltyAmount.toFixed(4)} ETH</Text>
+                </Column>
+              </Row>
+              {buyerAddress && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column>
+                      <Text style={detailLabel}>Buyer</Text>
+                    </Column>
+                    <Column align="right">
+                      <Text style={hashValue}>
+                        {buyerAddress.slice(0, 6)}...{buyerAddress.slice(-4)}
+                      </Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+              {transactionHash && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column>
+                      <Text style={detailLabel}>Transaction</Text>
+                    </Column>
+                    <Column align="right">
+                      <Text style={hashValue}>
+                        {transactionHash.slice(0, 6)}...{transactionHash.slice(-4)}
+                      </Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+            </Section>
+
+            {/* CTA */}
+            {dashboardUrl && (
+              <Section style={ctaSection}>
+                <Button style={primaryButton} href={dashboardUrl}>
+                  View Earnings Dashboard
+                </Button>
+              </Section>
             )}
           </Section>
 
-          <Text style={text}>
-            Congratulations! Your NFT has been resold and you've received your creator royalty.
-            The payment has been sent to your wallet.
-          </Text>
-
-          {dashboardUrl && (
-            <Button style={button} href={dashboardUrl}>
-              View Earnings Dashboard
-            </Button>
-          )}
-
+          {/* Creator Tips */}
           <Section style={tipsSection}>
-            <Heading style={tipsHeading}>📊 Track Your Royalties</Heading>
-            <Text style={tipsText}>
-              View all your royalty earnings, track sales history, and analyze your NFT performance
-              in your creator dashboard.
+            <Heading style={tipsTitle}>📊 Creator Insights</Heading>
+            <Text style={tipsIntro}>
+              Your art is being appreciated and resold - this is a great sign of collector interest!
+            </Text>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Track all your royalty earnings in the creator dashboard</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Analyze which pieces perform best on the secondary market</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Use these insights to inform future collections</Text>
+            </div>
+          </Section>
+
+          {/* Celebration Note */}
+          <Section style={celebrationSection}>
+            <Text style={celebrationText}>
+              🎨 Congratulations! Your creativity is generating ongoing income.
             </Text>
           </Section>
 
-          <Text style={footer}>
-            You're receiving this because you're the creator of this NFT.
-            <br />
-            Manage your preferences in your notification settings.
-          </Text>
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you&apos;re the creator of this NFT.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Notifications</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
         </Container>
       </Body>
     </Html>
@@ -118,158 +242,348 @@ export const RoyaltyReceivedEmail = ({
 export default RoyaltyReceivedEmail
 
 const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
 }
 
 const container = {
-  backgroundColor: '#ffffff',
+  backgroundColor: '#1a1a1a',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
   maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
 }
 
-const h1 = {
-  color: '#059669',
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
   fontSize: '28px',
-  fontWeight: 'bold',
-  margin: '40px 0 20px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
 }
 
-const h2 = {
-  color: '#333',
-  fontSize: '22px',
-  fontWeight: 'bold',
-  margin: '20px 0',
-  padding: '0 40px',
-  textAlign: 'center' as const,
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '15px',
+  margin: '0',
 }
 
-const nftImg = {
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  margin: '0 40px 20px',
-  maxWidth: '520px',
+const amountCardSection = {
+  padding: '24px 40px 0',
 }
 
-const amountSection = {
-  backgroundColor: '#d1fae5',
-  borderRadius: '8px',
-  margin: '24px 40px',
+const amountCard = {
+  background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+  borderRadius: '16px',
   padding: '32px 24px',
   textAlign: 'center' as const,
+  border: '1px solid #10b981',
 }
 
 const amountLabel = {
-  color: '#065f46',
+  color: 'rgba(255, 255, 255, 0.75)',
+  fontSize: '13px',
+  fontWeight: '500',
+  margin: '0 0 8px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '1px',
+}
+
+const amountValue = {
+  color: '#ffffff',
+  fontSize: '42px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-1px',
+}
+
+const amountSubtext = {
+  color: 'rgba(255, 255, 255, 0.75)',
   fontSize: '14px',
-  fontWeight: '600',
-  margin: '0 0 8px 0',
+  margin: '0',
+}
+
+const nftSection = {
+  padding: '28px 40px',
+}
+
+const nftImageColumn = {
+  width: '100px',
+  verticalAlign: 'top',
+}
+
+const nftImageStyle = {
+  width: '80px',
+  height: '80px',
+  borderRadius: '12px',
+  objectFit: 'cover' as const,
+  border: '2px solid #333',
+}
+
+const nftPlaceholder = {
+  width: '80px',
+  height: '80px',
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '2px solid #333',
+}
+
+const nftPlaceholderText = {
+  fontSize: '28px',
+  margin: '0',
+}
+
+const nftInfoColumn = {
+  verticalAlign: 'top',
+  paddingLeft: '8px',
+}
+
+const nftCollection = {
+  color: '#f59e0b',
+  fontSize: '11px',
+  fontWeight: '500',
+  margin: '0 0 4px',
   textTransform: 'uppercase' as const,
   letterSpacing: '0.5px',
 }
 
-const amountValue = {
-  color: '#059669',
-  fontSize: '36px',
-  fontWeight: 'bold',
-  margin: '0 0 8px 0',
-}
-
-const amountSubtext = {
-  color: '#047857',
-  fontSize: '14px',
-  margin: 0,
-}
-
-const text = {
-  color: '#333',
+const nftTitle = {
+  color: '#ffffff',
   fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
+  fontWeight: '700',
+  margin: '0 0 12px',
 }
 
-const detailsSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '24px',
+const soldLabel = {
+  color: '#71717a',
+  fontSize: '11px',
+  fontWeight: '500',
+  margin: '0 0 2px',
+  textTransform: 'uppercase' as const,
+}
+
+const soldPrice = {
+  color: '#10b981',
+  fontSize: '18px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '0 40px 32px',
+}
+
+const detailsCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  border: '1px solid #333',
+}
+
+const detailsTitle = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0',
 }
 
 const detailRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
+  padding: '8px 0',
 }
 
 const detailLabel = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: 0,
+  color: '#71717a',
+  fontSize: '14px',
+  margin: '0',
 }
 
 const detailValue = {
-  color: '#333',
-  fontSize: '15px',
-  fontWeight: 'bold',
-  margin: 0,
+  color: '#a1a1aa',
+  fontSize: '14px',
+  margin: '0',
 }
 
-const detailValueSmall = {
-  color: '#333',
-  fontSize: '13px',
-  fontWeight: 'bold',
-  margin: 0,
-  fontFamily: 'monospace',
-}
-
-const button = {
-  backgroundColor: '#059669',
-  borderRadius: '5px',
-  color: '#fff',
+const earningsValue = {
+  color: '#10b981',
   fontSize: '16px',
-  fontWeight: 'bold',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const hashValue = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  fontFamily: 'monospace',
+  margin: '0',
+}
+
+const detailDivider = {
+  borderColor: '#333',
+  margin: '12px 0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#f59e0b',
+  borderRadius: '10px',
+  color: '#000000',
+  fontSize: '16px',
+  fontWeight: '700',
   textDecoration: 'none',
   textAlign: 'center' as const,
-  display: 'block',
-  width: '250px',
-  padding: '14px 7px',
-  margin: '32px auto',
+  display: 'inline-block',
+  padding: '16px 48px',
+  border: 'none',
 }
 
 const tipsSection = {
-  backgroundColor: '#ede9fe',
-  borderRadius: '8px',
-  margin: '32px 40px',
+  backgroundColor: '#252525',
+  margin: '0 24px',
+  borderRadius: '12px',
   padding: '24px',
+  border: '1px solid #333',
 }
 
-const tipsHeading = {
-  color: '#5b21b6',
+const tipsTitle = {
+  color: '#ffffff',
   fontSize: '16px',
-  fontWeight: 'bold',
-  margin: '0 0 8px 0',
+  fontWeight: '600',
+  margin: '0 0 12px',
 }
 
-const tipsText = {
-  color: '#6b21a8',
+const tipsIntro = {
+  color: '#a1a1aa',
   fontSize: '14px',
-  lineHeight: '24px',
-  margin: 0,
+  lineHeight: '22px',
+  margin: '0 0 16px',
+}
+
+const tipItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '10px',
+}
+
+const tipBullet = {
+  color: '#f59e0b',
+  fontSize: '14px',
+  margin: '0 10px 0 0',
+}
+
+const tipText = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  lineHeight: '20px',
+  margin: '0',
+}
+
+const celebrationSection = {
+  backgroundColor: 'rgba(139, 92, 246, 0.1)',
+  margin: '24px',
+  borderRadius: '12px',
+  padding: '16px 24px',
+  textAlign: 'center' as const,
+  border: '1px solid rgba(139, 92, 246, 0.2)',
+}
+
+const celebrationText = {
+  color: '#c4b5fd',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
 }
 
 const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
   textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
 }
