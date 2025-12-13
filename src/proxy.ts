@@ -1,5 +1,5 @@
-// @ts-expect-error - better-fetch doesn't export types
-import { betterFetch } from 'better-fetch'
+// @ts-expect-error - better-fetch uses default export
+import betterFetch from 'better-fetch'
 import type { Session } from 'better-auth/types'
 import { NextResponse, type NextRequest } from 'next/server'
 

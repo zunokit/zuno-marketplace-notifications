@@ -1,3 +1,4 @@
+import 'dotenv/config'
 /* eslint-disable no-console */
 import { hashPassword } from 'better-auth/crypto'
 import { PrismaClient } from '@/infrastructure/database/prisma'
