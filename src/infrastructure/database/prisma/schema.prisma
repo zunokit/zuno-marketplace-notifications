@@ -1,0 +1,822 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================================================
+
+/// Organizations represent tenants in the multi-tenant system
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // Soft delete
+
+  // Relationships
+  users            OrganizationMember[]
+  notifications    Notification[]
+  templates        Template[]
+  rateLimitConfigs RateLimitConfig[]
+  apiKeys          ApiKey[]
+  webhooks         Webhook[]
+  priceAlerts      PriceAlert[]
+  watchlists       Watchlist[]
+  drops            Drop[]
+  whitelistEntries WhitelistEntry[]
+
+  @@index([slug])
+  @@index([isActive, deletedAt])
+  @@map("organizations")
+}
+
+/// Organization members with role-based access
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  role           Role     @default(VIEWER)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@index([organizationId, role])
+  @@map("organization_members")
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+/// Users managed by Better-Auth
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // Soft delete
+
+  // Relationships
+  organizations    OrganizationMember[]
+  notifications    Notification[]       @relation("UserNotifications")
+  preferences      UserPreference[]
+  subscriptions    Subscription[]
+  auditLogs        AuditLog[]           @relation("AuditActor")
+  accounts         Account[]
+  sessions         Session[]
+
+  // NFT Marketplace Features
+  priceAlerts      PriceAlert[]
+  watchlists       Watchlist[]
+  whitelistEntries WhitelistEntry[]
+
+  @@index([email])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+// Better-Auth models
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+/// Core notification entity
+model Notification {
+  id             String           @id @default(uuid())
+  organizationId String
+  userId         String
+  type           NotificationType
+  channel        Channel
+  templateId     String?
+  status         NotificationStatus @default(PENDING)
+  priority       Priority         @default(NORMAL)
+
+  // Payload (channel-specific data)
+  payload        Json
+
+  // Metadata
+  idempotencyKey String?          @unique
+  correlationId  String?          // For tracing
+  metadata       Json?            // Additional context
+
+  // Timing
+  createdAt      DateTime         @default(now())
+  scheduledAt    DateTime?        // Future: scheduled delivery
+  sentAt         DateTime?
+  deliveredAt    DateTime?
+  failedAt       DateTime?
+  readAt         DateTime?
+
+  // Retry tracking
+  retryCount     Int              @default(0)
+  maxRetries     Int              @default(5)
+  lastRetryAt    DateTime?
+  nextRetryAt    DateTime?
+
+  // Error tracking
+  lastError      String?
+  errorCategory  ErrorCategory?
+
+  // Relationships
+  organization   Organization     @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User             @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  template       Template?        @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  deliveryAttempts DeliveryAttempt[]
+  outbox         Outbox?
+
+  @@index([organizationId, userId, createdAt(sort: Desc)])
+  @@index([status, createdAt])
+  @@index([channel, status])
+  @@index([idempotencyKey])
+  @@index([correlationId])
+  @@index([scheduledAt])
+  @@index([nextRetryAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  // Marketplace events
+  AUCTION_STARTED
+  AUCTION_ENDING_SOON
+  AUCTION_ENDED
+  AUCTION_WON
+  AUCTION_OUTBID
+
+  BID_PLACED
+  BID_ACCEPTED
+  BID_REJECTED
+
+  OFFER_RECEIVED
+  OFFER_ACCEPTED
+  OFFER_REJECTED
+  OFFER_EXPIRED
+
+  LISTING_CREATED
+  LISTING_SOLD
+  LISTING_EXPIRED
+  LISTING_PRICE_CHANGED
+
+  NFT_MINTED
+  NFT_TRANSFERRED
+  NFT_BURNED
+
+  COLLECTION_CREATED
+  COLLECTION_VERIFIED
+
+  // Price & Floor Price Events
+  FLOOR_PRICE_DROP
+  PRICE_DROP_ALERT
+  PRICE_INCREASE_ALERT
+  TARGET_PRICE_REACHED
+
+  // Social/Following Events
+  USER_FOLLOWED
+  FOLLOWING_LISTED_NFT
+  FOLLOWING_BOUGHT_NFT
+  COLLECTION_FOLLOWED
+  ACTIVITY_ON_OWNED_NFT
+
+  // Rarity & Discovery
+  RARE_NFT_LISTED
+  TRAIT_MATCH_ALERT
+  SIMILAR_NFT_SOLD
+
+  // Drops & Minting
+  DROP_ANNOUNCED
+  DROP_STARTING_SOON
+  DROP_LIVE
+  DROP_ENDED
+  MINT_SUCCESS
+  MINT_FAILED
+  WHITELIST_APPROVED
+  WHITELIST_SPOT_AVAILABLE
+
+  // Revenue & Royalties
+  ROYALTY_RECEIVED
+  SALE_REVENUE_RECEIVED
+  PAYOUT_PROCESSED
+
+  // Analytics & Stats
+  WEEKLY_PORTFOLIO_STATS
+  MONTHLY_SUMMARY
+  PORTFOLIO_VALUE_CHANGE
+
+  // Gas & Optimization
+  LOW_GAS_ALERT
+  OPTIMAL_GAS_TIME
+
+  // System notifications
+  SYSTEM_MAINTENANCE
+  SYSTEM_UPDATE
+  SECURITY_ALERT
+
+  // User actions
+  WELCOME
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  PROFILE_UPDATED
+
+  // Generic
+  CUSTOM
+}
+
+enum Channel {
+  EMAIL
+  WEBSOCKET
+  PUSH
+  SMS
+}
+
+enum NotificationStatus {
+  PENDING       // Created, not yet processed
+  SCHEDULED     // Scheduled for future delivery
+  PROCESSING    // Being processed by worker
+  SENT          // Successfully sent to provider
+  DELIVERED     // Confirmed delivered to recipient
+  FAILED        // Failed after all retries
+  CANCELLED     // Manually cancelled
+  EXPIRED       // Expired before delivery
+}
+
+enum Priority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum ErrorCategory {
+  VALIDATION_ERROR
+  RATE_LIMIT_EXCEEDED
+  PROVIDER_ERROR
+  NETWORK_ERROR
+  AUTHENTICATION_ERROR
+  CONFIGURATION_ERROR
+  UNKNOWN_ERROR
+}
+
+// ============================================================================
+// OUTBOX PATTERN
+// ============================================================================
+
+/// Transactional outbox for reliable message delivery
+model Outbox {
+  id             String         @id @default(uuid())
+  notificationId String         @unique
+  channel        Channel
+  payload        Json
+  status         OutboxStatus   @default(PENDING)
+
+  // Timing
+  createdAt      DateTime       @default(now())
+  scheduledAt    DateTime       @default(now()) // When to process
+  processingAt   DateTime?      // When worker started processing
+  processedAt    DateTime?      // When worker finished
+
+  // Locking (for distributed workers)
+  lockedAt       DateTime?
+  lockedBy       String?        // Worker ID
+
+  // Retry tracking
+  retryCount     Int            @default(0)
+  lastError      String?
+  nextRetryAt    DateTime?
+
+  // Relationships
+  notification   Notification   @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([status, scheduledAt])
+  @@index([status, nextRetryAt])
+  @@index([lockedAt, lockedBy])
+  @@index([channel, status])
+  @@map("outbox")
+}
+
+enum OutboxStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  DEAD_LETTER
+}
+
+/// Dead Letter Queue for permanently failed notifications
+model DeadLetterQueue {
+  id             String   @id @default(uuid())
+  notificationId String
+  channel        Channel
+  payload        Json
+  error          String
+  failedAt       DateTime @default(now())
+  retryCount     Int
+  metadata       Json?
+
+  @@index([failedAt])
+  @@index([channel])
+  @@map("dead_letter_queue")
+}
+
+// ============================================================================
+// DELIVERY TRACKING
+// ============================================================================
+
+/// Track every delivery attempt for observability
+model DeliveryAttempt {
+  id             String   @id @default(uuid())
+  notificationId String
+  attemptNumber  Int
+  channel        Channel
+  provider       String   // e.g., "resend", "firebase"
+
+  // Result
+  success        Boolean
+  responseCode   Int?
+  responseBody   Json?
+  error          String?
+  duration       Int      // Milliseconds
+
+  // Provider-specific
+  providerMessageId String?
+  providerMetadata  Json?
+
+  // Timing
+  attemptedAt    DateTime @default(now())
+
+  // Relationships
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+
+  @@index([notificationId, attemptNumber])
+  @@index([attemptedAt])
+  @@index([success])
+  @@map("delivery_attempts")
+}
+
+// ============================================================================
+// TEMPLATES
+// ============================================================================
+
+/// Notification templates with versioning
+model Template {
+  id             String         @id @default(uuid())
+  organizationId String
+  name           String
+  slug           String
+  channel        Channel
+  type           NotificationType?
+  version        Int            @default(1)
+  isActive       Boolean        @default(true)
+
+  // Email-specific
+  subject        String?        // Handlebars template
+  fromName       String?
+  fromEmail      String?
+  replyTo        String?
+
+  // Body (Handlebars template)
+  body           String         @db.Text
+  bodyText       String?        @db.Text // Plain text version
+
+  // Variables (extracted from template)
+  variables      Json           // ["userName", "actionUrl", ...]
+
+  // Metadata
+  description    String?
+  category       String?
+  tags           String[]
+
+  // Audit
+  createdBy      String
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  publishedAt    DateTime?
+  deprecatedAt   DateTime?
+
+  // Relationships
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  notifications  Notification[]
+  versions       TemplateVersion[]
+
+  @@unique([organizationId, slug, version])
+  @@index([organizationId, channel, isActive])
+  @@index([type, channel])
+  @@map("templates")
+}
+
+/// Template version history
+model TemplateVersion {
+  id         String   @id @default(uuid())
+  templateId String
+  version    Int
+  subject    String?
+  body       String   @db.Text
+  bodyText   String?  @db.Text
+  variables  Json
+  createdBy  String
+  createdAt  DateTime @default(now())
+  changeSummary String?
+
+  // Relationships
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@unique([templateId, version])
+  @@index([templateId, createdAt(sort: Desc)])
+  @@map("template_versions")
+}
+
+// ============================================================================
+// USER PREFERENCES
+// ============================================================================
+
+/// User notification preferences
+model UserPreference {
+  id         String   @id @default(uuid())
+  userId     String
+  channel    Channel
+  type       NotificationType?
+  enabled    Boolean  @default(true)
+  frequency  Frequency @default(REALTIME)
+  quietHoursStart  Int?     // Hour (0-23)
+  quietHoursEnd    Int?     // Hour (0-23)
+  timezone   String?  // IANA timezone
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relationships
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, channel, type])
+  @@index([userId, enabled])
+  @@map("user_preferences")
+}
+
+enum Frequency {
+  REALTIME        // Immediate delivery
+  DIGEST_HOURLY   // Hourly digest
+  DIGEST_DAILY    // Daily digest
+  DIGEST_WEEKLY   // Weekly digest
+}
+
+/// Subscription management (for email unsubscribe)
+model Subscription {
+  id         String   @id @default(uuid())
+  userId     String
+  email      String
+  category   String   // e.g., "marketing", "transactional", "all"
+  isSubscribed Boolean @default(true)
+  subscribedAt   DateTime?
+  unsubscribedAt DateTime?
+  reason     String?  // Unsubscribe reason
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relationships
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, category])
+  @@index([email, category])
+  @@map("subscriptions")
+}
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
+/// Per-organization rate limit configuration
+model RateLimitConfig {
+  id             String   @id @default(uuid())
+  organizationId String
+  channel        Channel
+  maxPerMinute   Int      @default(100)
+  maxPerHour     Int      @default(1000)
+  maxPerDay      Int      @default(10000)
+  isActive       Boolean  @default(true)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, channel])
+  @@index([organizationId, isActive])
+  @@map("rate_limit_configs")
+}
+
+// ============================================================================
+// API KEYS & AUTHENTICATION
+// ============================================================================
+
+/// API keys for external integrations
+model ApiKey {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  keyHash        String   @unique // bcrypt hash
+  keyPrefix      String   // First 8 chars (for identification)
+
+  // Permissions
+  scopes         String[]
+  isActive       Boolean  @default(true)
+
+  // Usage tracking
+  lastUsedAt     DateTime?
+  usageCount     Int      @default(0)
+
+  // Expiry
+  expiresAt      DateTime?
+
+  createdBy      String
+  createdAt      DateTime @default(now())
+  revokedAt      DateTime?
+  revokedBy      String?
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+  @@index([keyPrefix])
+  @@map("api_keys")
+}
+
+/// Webhooks for external integrations
+model Webhook {
+  id             String   @id @default(uuid())
+  organizationId String
+  url            String
+  events         String[] // e.g., ["notification.sent", "notification.failed"]
+  secret         String   // For HMAC signature verification
+  description    String?
+  isActive       Boolean  @default(true)
+
+  // Usage tracking
+  lastTriggeredAt DateTime?
+  failureCount   Int      @default(0)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, isActive])
+  @@map("webhooks")
+}
+
+// ============================================================================
+// AUDIT LOGS
+// ============================================================================
+
+/// Comprehensive audit trail
+model AuditLog {
+  id             String   @id @default(uuid())
+  organizationId String?
+  userId         String?
+  action         AuditAction
+  resource       AuditResource
+  resourceId     String?
+
+  // Change tracking
+  changes        Json?    // { before: {...}, after: {...} }
+
+  // Context
+  ipAddress      String?
+  userAgent      String?
+  metadata       Json?
+
+  createdAt      DateTime @default(now())
+
+  // Relationships
+  user           User?    @relation("AuditActor", fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([organizationId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([resource, resourceId])
+  @@index([createdAt(sort: Desc)])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  SEND
+  RESEND
+  CANCEL
+  SUBSCRIBE
+  UNSUBSCRIBE
+  EXPORT
+  IMPORT
+}
+
+enum AuditResource {
+  NOTIFICATION
+  TEMPLATE
+  USER_PREFERENCE
+  SUBSCRIPTION
+  API_KEY
+  ORGANIZATION
+  USER
+}
+
+// ============================================================================
+// NFT MARKETPLACE FEATURES
+// ============================================================================
+
+/// Price alerts for NFTs and collections
+model PriceAlert {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  itemType       String   // "nft" or "collection"
+  itemId         String   // NFT ID or Collection ID
+  targetPrice    Decimal  @db.Decimal(20, 8)
+  condition      String   // "above", "below", "equals"
+  isActive       Boolean  @default(true)
+  triggered      Boolean  @default(false)
+  triggeredAt    DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([userId, isActive])
+  @@index([itemType, itemId, isActive])
+  @@map("price_alerts")
+}
+
+/// Watchlist for tracking NFTs and collections
+model Watchlist {
+  id             String   @id @default(uuid())
+  organizationId String
+  userId         String
+  itemType       String   // "nft", "collection", or "user"
+  itemId         String   // NFT ID, Collection ID, or User ID
+  notes          String?
+
+  createdAt      DateTime @default(now())
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemType, itemId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([itemType, itemId])
+  @@map("watchlists")
+}
+
+/// NFT drop campaigns
+model Drop {
+  id             String   @id @default(uuid())
+  organizationId String
+  collectionId   String
+  name           String
+  description    String?
+  startTime      DateTime
+  endTime        DateTime?
+  totalSupply    Int?
+  pricePerNFT    Decimal? @db.Decimal(20, 8)
+  isWhitelistOnly Boolean @default(false)
+  status         String   // "announced", "live", "ended", "sold_out"
+  imageUrl       String?
+  mintUrl        String?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  whitelistEntries WhitelistEntry[]
+
+  @@index([organizationId])
+  @@index([status, startTime])
+  @@index([collectionId])
+  @@map("drops")
+}
+
+/// Whitelist for drops
+model WhitelistEntry {
+  id             String   @id @default(uuid())
+  organizationId String
+  dropId         String
+  userId         String
+  spots          Int      @default(1)
+  isApproved     Boolean  @default(false)
+  hasNotified    Boolean  @default(false)
+
+  createdAt      DateTime @default(now())
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  drop           Drop     @relation(fields: [dropId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([dropId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@index([dropId, isApproved])
+  @@map("whitelist_entries")
+}
+
+// ============================================================================
+// ANALYTICS (Future)
+// ============================================================================
+
+/// Daily aggregated stats
+model DailyStats {
+  id             String   @id @default(uuid())
+  organizationId String
+  date           DateTime @db.Date
+  channel        Channel
+
+  // Counters
+  sent           Int      @default(0)
+  delivered      Int      @default(0)
+  failed         Int      @default(0)
+  bounced        Int      @default(0) // Email-specific
+  opened         Int      @default(0) // Email-specific
+  clicked        Int      @default(0) // Email-specific
+
+  // Latency (milliseconds)
+  avgLatency     Int?
+  p95Latency     Int?
+  p99Latency     Int?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([organizationId, date, channel])
+  @@index([organizationId, date(sort: Desc)])
+  @@index([date(sort: Desc)])
+  @@map("daily_stats")
+}

@@ -183,7 +183,7 @@ See [docs/30-GIT-WORKFLOW.md](./docs/30-GIT-WORKFLOW.md) for full workflow.
 
 ### Pre-Push Checklist
 
-**MUST PASS** before pushing (enforced by Husky hooks):
+**MUST PASS** before pushing:
 
 ```bash
 pnpm typecheck   # TypeScript type checking
