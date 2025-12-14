@@ -107,6 +107,16 @@ src/app/globals.css
 src/app/layout.tsx
 src/app/not-found.tsx
 src/app/page.tsx
+src/components/emails/common/.gitkeep
+src/components/emails/common/email-button.tsx
+src/components/emails/common/email-footer.tsx
+src/components/emails/common/email-header.tsx
+src/components/emails/common/feature-card.tsx
+src/components/emails/common/hero-section.tsx
+src/components/emails/common/index.ts
+src/components/emails/nft/.gitkeep
+src/components/emails/static/.gitkeep
+src/components/emails/test-components-email.tsx
 src/components/features/api-keys-table.tsx
 src/components/features/delivery-attempts-table.tsx
 src/components/features/notifications-table.tsx
@@ -186,6 +196,355 @@ tsconfig.json
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="src/components/emails/common/email-button.tsx">
+import { Button } from '@react-email/components'
+
+interface EmailButtonProps {
+  href: string
+  variant?: 'primary' | 'secondary'
+  children: React.ReactNode
+  style?: React.CSSProperties
+}
+
+export const EmailButton = ({
+  href,
+  variant = 'primary',
+  children,
+  style,
+}: EmailButtonProps) => (
+  <Button style={{ ...buttonStyles[variant], ...style }} href={href}>
+    {children}
+  </Button>
+)
+
+const buttonStyles = {
+  primary: {
+    backgroundColor: '#6366f1',
+    borderRadius: '10px',
+    color: '#ffffff',
+    fontSize: '16px',
+    fontWeight: '600',
+    textDecoration: 'none',
+    textAlign: 'center' as const,
+    display: 'inline-block',
+    padding: '14px 40px',
+    border: 'none',
+  },
+  secondary: {
+    backgroundColor: 'transparent',
+    borderRadius: '10px',
+    color: '#a1a1aa',
+    fontSize: '16px',
+    fontWeight: '600',
+    textDecoration: 'none',
+    textAlign: 'center' as const,
+    display: 'inline-block',
+    padding: '14px 32px',
+    border: '1px solid #404040',
+  },
+}
+</file>
+
+<file path="src/components/emails/common/email-footer.tsx">
+import { Column, Hr, Link, Row, Section, Text } from '@react-email/components'
+
+interface EmailFooterProps {
+  brandName?: string
+  showSocialLinks?: boolean
+}
+
+export const EmailFooter = ({
+  brandName = 'Zuno Marketplace',
+  showSocialLinks = true,
+}: EmailFooterProps) => (
+  <>
+    <Hr style={divider} />
+    <Section style={footer}>
+      <Row>
+        <Column align="center">
+          <Text style={footerBrand}>{brandName}</Text>
+          {showSocialLinks && (
+            <Row style={{ marginBottom: '16px' }}>
+              <Column align="center">
+                <Link href="https://twitter.com/zunomarket" style={socialLink}>
+                  Twitter
+                </Link>
+                <Text style={socialDot}>•</Text>
+                <Link href="https://discord.gg/zuno" style={socialLink}>
+                  Discord
+                </Link>
+                <Text style={socialDot}>•</Text>
+                <Link href="https://instagram.com/zunomarket" style={socialLink}>
+                  Instagram
+                </Link>
+              </Column>
+            </Row>
+          )}
+          <Text style={footerText}>
+            © 2025 {brandName}. All rights reserved.
+          </Text>
+          <Text style={{ margin: '0', textAlign: 'center' as const }}>
+            <Link href="https://zuno.market/privacy" style={footerLink}>
+              Privacy Policy
+            </Link>
+            <Text style={footerDot}>•</Text>
+            <Link href="https://zuno.market/terms" style={footerLink}>
+              Terms of Service
+            </Link>
+            <Text style={footerDot}>•</Text>
+            <Link
+              href="https://zuno.market/settings/notifications"
+              style={footerLink}
+            >
+              Unsubscribe
+            </Link>
+          </Text>
+        </Column>
+      </Row>
+    </Section>
+  </>
+)
+
+const divider = { borderColor: '#2a2a2a', margin: '0' }
+
+const footer = { padding: '32px 40px', backgroundColor: '#141414' }
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialLink = { color: '#a1a1aa', fontSize: '13px', textDecoration: 'none' }
+
+const socialDot = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerText = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLink = { color: '#71717a', fontSize: '12px', textDecoration: 'none' }
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/components/emails/common/email-header.tsx">
+import { Column, Img, Row, Section } from '@react-email/components'
+
+interface EmailHeaderProps {
+  organizationName?: string
+  logoUrl?: string
+}
+
+export const EmailHeader = ({
+  organizationName = 'Zuno Marketplace',
+  logoUrl = 'https://zunokit.github.io/zuno-marketplace-assets/images/zuno-logo.png',
+}: EmailHeaderProps) => (
+  <Section style={header}>
+    <Row>
+      <Column align="center">
+        <Img
+          src={logoUrl}
+          width="140"
+          height="40"
+          alt={organizationName}
+          style={logo}
+        />
+      </Column>
+    </Row>
+  </Section>
+)
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+</file>
+
+<file path="src/components/emails/common/feature-card.tsx">
+import { Column, Row, Section, Text } from '@react-email/components'
+
+interface FeatureCardProps {
+  icon: string
+  label: string
+  description: string
+}
+
+export const FeatureCard = ({ icon, label, description }: FeatureCardProps) => (
+  <Section style={card}>
+    <Row>
+      <Column align="center">
+        <Text style={iconStyle}>{icon}</Text>
+        <Text style={labelStyle}>{label}</Text>
+        <Text style={descStyle}>{description}</Text>
+      </Column>
+    </Row>
+  </Section>
+)
+
+const card = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 16px',
+  textAlign: 'center' as const,
+  border: '1px solid #333',
+}
+
+const iconStyle = { fontSize: '24px', margin: '0 0 8px' }
+
+const labelStyle = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 4px',
+}
+
+const descStyle = {
+  color: '#71717a',
+  fontSize: '12px',
+  lineHeight: '18px',
+  margin: '0',
+}
+</file>
+
+<file path="src/components/emails/common/hero-section.tsx">
+import { Column, Heading, Row, Section, Text } from '@react-email/components'
+
+interface HeroSectionProps {
+  emoji?: string
+  title: string
+  subtitle?: string
+  backgroundColor?: string
+}
+
+export const HeroSection = ({
+  emoji,
+  title,
+  subtitle,
+  backgroundColor = '#6366f1',
+}: HeroSectionProps) => (
+  <Section style={{ padding: '0 24px' }}>
+    <Section style={{ ...heroBox, backgroundColor }}>
+      <Row>
+        <Column align="center">
+          {emoji && <Text style={emojiStyle}>{emoji}</Text>}
+          <Heading style={titleStyle}>{title}</Heading>
+          {subtitle && <Text style={subtitleStyle}>{subtitle}</Text>}
+        </Column>
+      </Row>
+    </Section>
+  </Section>
+)
+
+const heroBox = {
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const emojiStyle = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const titleStyle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const subtitleStyle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '16px',
+  margin: '0',
+}
+</file>
+
+<file path="src/components/emails/common/index.ts">
+export { EmailHeader } from './email-header'
+export { EmailFooter } from './email-footer'
+export { EmailButton } from './email-button'
+export { HeroSection } from './hero-section'
+export { FeatureCard } from './feature-card'
+</file>
+
+<file path="src/components/emails/test-components-email.tsx">
+import { Body, Container, Html } from '@react-email/components'
+import {
+  EmailButton,
+  EmailFooter,
+  EmailHeader,
+  FeatureCard,
+  HeroSection,
+} from './common'
+
+// Test email to verify all shared components work
+export default function TestComponentsEmail() {
+  return (
+    <Html>
+      <Body style={main}>
+        <Container style={container}>
+          <EmailHeader />
+
+          <HeroSection
+            emoji="🎉"
+            title="Components Test"
+            subtitle="Testing all shared email components"
+          />
+
+          <FeatureCard
+            icon="✨"
+            label="Feature Test"
+            description="This card tests the FeatureCard component"
+          />
+
+          <EmailButton href="https://zuno.market">Primary Button</EmailButton>
+
+          <EmailButton href="https://zuno.market" variant="secondary">
+            Secondary Button
+          </EmailButton>
+
+          <EmailFooter />
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+const main = {
+  backgroundColor: '#0a0a0a',
+  fontFamily:
+    '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+}
+
+const container = {
+  margin: '0 auto',
+  maxWidth: '600px',
+}
+</file>
 
 <file path=".claude/.env.example">
 # Claude Code - Global Environment Variables
@@ -309,133 +668,6 @@ node_modules/*
 .idea/*
 .husky/*
 .venv/*
-</file>
-
-<file path="scripts/test-all.ts">
-/**
- * Run All Tests
- *
- * Comprehensive test suite that runs all test scripts.
- *
- * Run: npx tsx scripts/test-all.ts
- */
-
-import { execSync } from 'child_process'
-import path from 'path'
-
-interface TestResult {
-  name: string
-  success: boolean
-  duration: number
-  error?: string
-}
-
-const tests = [
-  { name: 'System Status', script: 'check-status.ts' },
-  { name: 'Email Channel', script: 'test-email-channel.ts' },
-  { name: 'React Email Templates', script: 'test-react-email.ts' },
-  { name: 'Notification Flow', script: 'verify-notification-flow.ts' },
-  { name: 'Process Outbox', script: 'process-outbox.ts' },
-  { name: 'Webhook Service', script: 'test-webhook.ts' },
-  { name: 'Price Alerts', script: 'test-price-alerts.ts' },
-  { name: 'Rate Limiting', script: 'test-rate-limit.ts' },
-]
-
-async function runTest(name: string, script: string): Promise<TestResult> {
-  const startTime = Date.now()
-  const scriptPath = path.join(__dirname, script)
-
-  try {
-    console.log(`\n${'='.repeat(60)}`)
-    console.log(`Running: ${name}`)
-    console.log('='.repeat(60))
-
-    execSync(`npx tsx "${scriptPath}"`, {
-      stdio: 'inherit',
-      cwd: path.join(__dirname, '..'),
-    })
-
-    return {
-      name,
-      success: true,
-      duration: Date.now() - startTime,
-    }
-  } catch (error) {
-    return {
-      name,
-      success: false,
-      duration: Date.now() - startTime,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    }
-  }
-}
-
-async function main() {
-  console.log('╔══════════════════════════════════════════════════════════╗')
-  console.log('║         ZUNO NOTIFICATIONS - COMPREHENSIVE TEST          ║')
-  console.log('╚══════════════════════════════════════════════════════════╝')
-  console.log('')
-  console.log(`Tests to run: ${tests.length}`)
-  console.log('Prerequisites:')
-  console.log('  - Docker services running (pnpm docker:up)')
-  console.log('  - Database migrated (pnpm db:migrate)')
-  console.log('')
-
-  const results: TestResult[] = []
-  const overallStart = Date.now()
-
-  for (const test of tests) {
-    const result = await runTest(test.name, test.script)
-    results.push(result)
-  }
-
-  const overallDuration = Date.now() - overallStart
-
-  // Print summary
-  console.log('\n')
-  console.log('╔══════════════════════════════════════════════════════════╗')
-  console.log('║                      TEST SUMMARY                        ║')
-  console.log('╚══════════════════════════════════════════════════════════╝')
-  console.log('')
-
-  const passed = results.filter((r) => r.success).length
-  const failed = results.filter((r) => !r.success).length
-
-  console.log('Results:')
-  console.log('─'.repeat(60))
-
-  for (const result of results) {
-    const status = result.success ? '✓ PASS' : '✗ FAIL'
-    const duration = `${(result.duration / 1000).toFixed(2)}s`
-    console.log(`  ${status.padEnd(8)} │ ${result.name.padEnd(30)} │ ${duration}`)
-    if (!result.success && result.error) {
-      console.log(`           │ Error: ${result.error.substring(0, 45)}...`)
-    }
-  }
-
-  console.log('─'.repeat(60))
-  console.log('')
-  console.log(`Total: ${results.length} tests`)
-  console.log(`Passed: ${passed}`)
-  console.log(`Failed: ${failed}`)
-  console.log(`Duration: ${(overallDuration / 1000).toFixed(2)}s`)
-  console.log('')
-
-  if (failed > 0) {
-    console.log('⚠️  Some tests failed. Check output above for details.')
-    process.exit(1)
-  } else {
-    console.log('✅ All tests passed!')
-    console.log('')
-    console.log('📧 View emails at: http://localhost:8025')
-  }
-}
-
-main()
-  .catch((e) => {
-    console.error('Test runner failed:', e)
-    process.exit(1)
-  })
 </file>
 
 <file path="scripts/test-price-alerts.ts">
@@ -7958,592 +8190,6 @@ const config = {
 export default config
 </file>
 
-<file path="README.md">
-# Zuno Marketplace Notifications
-
-**Version**: 1.0.0
-**Status**: 🚧 Under Development
-**License**: Proprietary
-
----
-
-## Overview
-
-Enterprise-grade, multi-channel notification service for the Zuno NFT Marketplace ecosystem. Delivers reliable, scalable, and observable notifications across Email, WebSocket, Push, and SMS channels.
-
-### Key Features
-
-- ✅ **Multi-Channel Support**: Email, WebSocket, Push (future), SMS (future)
-- ✅ **Reliable Delivery**: At-least-once semantics via Outbox Pattern
-- ✅ **Scalable Architecture**: Horizontal scaling with stateless workers
-- ✅ **Template Management**: Versioned templates with Handlebars
-- ✅ **Rate Limiting**: Per-channel and per-organization quotas
-- ✅ **Observability**: Structured logging, metrics, correlation IDs
-- ✅ **RBAC**: Organization-based access control via Better-Auth
-- ✅ **Admin UI**: shadcn/ui-powered management dashboard
-
----
-
-## Technology Stack
-
-| Layer | Technology | Version | Purpose |
-|-------|-----------|---------|---------|
-| **Framework** | Next.js | 16.x | Full-stack React framework |
-| **Language** | TypeScript | 5.x | Type safety |
-| **Database** | NeonDB (PostgreSQL) | 15+ | Serverless PostgreSQL |
-| **ORM** | Prisma | Latest | Type-safe database access |
-| **Auth** | Better-Auth | 1.3+ | Authentication & organizations |
-| **UI** | shadcn/ui + Tailwind | Latest | Component library |
-| **Email** | Resend (prod) / Mailpit (dev) | Latest | Email delivery |
-| **Cache** | Redis | 7.x | Rate limiting, sessions |
-| **State** | TanStack Query | 5.x | Data fetching & caching |
-| **Testing** | Jest + Testing Library | Latest | Unit & integration tests |
-| **CI/CD** | GitHub Actions | - | Automation |
-| **Deployment** | Vercel | - | Hosting |
-
----
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 18.17.0+
-- pnpm 8.0.0+
-- Docker & Docker Compose
-- NeonDB account
-- Resend API key
-
-### Installation
-
-```bash
-# Clone repository
-git clone https://github.com/zunokit/zuno-marketplace-notifications.git
-cd zuno-marketplace-notifications
-
-# Install dependencies
-pnpm install
-
-# Set up environment
-cp .env.example .env.local
-# Edit .env.local with your credentials
-
-# Start Docker services (PostgreSQL, Redis, Mailpit)
-pnpm docker:up
-
-# Run database migrations
-pnpm db:migrate
-
-# Seed database (optional)
-pnpm db:seed
-
-# Start development server
-pnpm dev
-
-# In separate terminal, start workers
-pnpm workers
-```
-
-Visit **http://localhost:3000**
-
-### Local Email Testing
-
-Mailpit UI: **http://localhost:8025**
-
-All emails sent locally are captured by Mailpit (no real emails sent).
-
----
-
-## Documentation
-
-### 📚 Complete Documentation (38 Files)
-
-See **[docs/00-INDEX.md](./docs/00-INDEX.md)** for full documentation structure.
-
-#### Quick Links
-
-| Document | Description |
-|----------|-------------|
-| **[01-PROJECT-OVERVIEW](./docs/01-PROJECT-OVERVIEW.md)** | Goals, success metrics, tech stack |
-| **[02-ARCHITECTURE](./docs/02-ARCHITECTURE.md)** | System architecture, event flows |
-| **[03-DATABASE-SCHEMA](./docs/03-DATABASE-SCHEMA.md)** | Complete Prisma schema |
-| **[04-PROJECT-SETUP](./docs/04-PROJECT-SETUP.md)** | Step-by-step setup guide |
-| **[05-DIRECTORY-STRUCTURE](./docs/05-DIRECTORY-STRUCTURE.md)** | Complete directory tree |
-| **[30-GIT-WORKFLOW](./docs/30-GIT-WORKFLOW.md)** | Branch strategy, commits, PRs |
-
----
-
-## Architecture
-
-### High-Level Overview
-
-```
-External Events → API Gateway → Use Cases → Outbox → Workers → Channels → Providers
-                       ↓
-                  Database (PostgreSQL + Redis)
-```
-
-### Key Patterns
-
-1. **Outbox Pattern**: Transactional writes ensure message durability
-2. **Retry with Exponential Backoff**: Failed messages retry intelligently
-3. **Idempotency**: Prevent duplicate sends via idempotency keys
-4. **Circuit Breaker**: Protect against provider failures
-5. **Rate Limiting**: Token bucket algorithm per channel/org
-
-See [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md) for details.
-
----
-
-## Project Structure
-
-```
-zuno-marketplace-notifications/
-├── src/
-│   ├── app/                    # Next.js App Router (API + pages)
-│   ├── core/                   # Domain & application logic
-│   │   ├── domain/             # Entities, value objects
-│   │   ├── use-cases/          # Business logic
-│   │   └── services/           # Domain services
-│   ├── infrastructure/         # External dependencies
-│   │   ├── repositories/       # Database access
-│   │   ├── channels/           # Email, WebSocket, Push, SMS
-│   │   └── outbox/             # Outbox pattern implementation
-│   ├── components/             # React components
-│   ├── lib/                    # Utilities, auth, logger
-│   └── workers/                # Background workers
-├── prisma/                     # Database schema & migrations
-├── tests/                      # Unit, integration, E2E tests
-└── docs/                       # 38 documentation files
-```
-
-See [docs/05-DIRECTORY-STRUCTURE.md](./docs/05-DIRECTORY-STRUCTURE.md) for complete structure.
-
----
-
-## Development Workflow
-
-### Branch Strategy
-
-```
-main (production)
-└── develop (integration)
-    ├── feature/* (new features)
-    ├── fix/* (bug fixes)
-    └── hotfix/* (critical fixes)
-```
-
-### Conventional Commits
-
-```
-feat(email): add template versioning
-fix(rate-limit): prevent race condition
-docs(api): update endpoint documentation
-```
-
-See [docs/30-GIT-WORKFLOW.md](./docs/30-GIT-WORKFLOW.md) for full workflow.
-
-### Pre-Push Checklist
-
-**MUST PASS** before pushing:
-
-```bash
-pnpm typecheck   # TypeScript type checking
-pnpm lint        # ESLint
-pnpm test        # Jest tests
-pnpm build       # Next.js build
-```
-
----
-
-## Scripts
-
-### Development
-
-```bash
-pnpm dev                  # Start Next.js dev server (port 3000)
-pnpm workers              # Start background workers
-pnpm db:studio            # Open Prisma Studio (database GUI)
-```
-
-### Testing
-
-```bash
-pnpm test                 # Run tests in watch mode
-pnpm test:ci              # Run tests with coverage (CI)
-pnpm test:e2e             # Run E2E tests (Playwright)
-```
-
-### Database
-
-```bash
-pnpm db:generate          # Generate Prisma client
-pnpm db:migrate           # Create & apply migration
-pnpm db:migrate:deploy    # Apply migrations (production)
-pnpm db:seed              # Seed database with test data
-pnpm db:reset             # Reset database (WARNING: destructive)
-```
-
-### Code Quality
-
-```bash
-pnpm lint                 # Run ESLint
-pnpm lint:fix             # Auto-fix linting issues
-pnpm format               # Format with Prettier
-pnpm typecheck            # TypeScript type checking
-```
-
-### Docker
-
-```bash
-pnpm docker:up            # Start services (PostgreSQL, Redis, Mailpit)
-pnpm docker:down          # Stop services
-pnpm docker:logs          # View service logs
-```
-
----
-
-## Environment Variables
-
-### Required Variables
-
-```bash
-# Database
-DATABASE_URL="postgresql://..."
-
-# Authentication
-BETTER_AUTH_SECRET="..."          # 32+ chars
-BETTER_AUTH_URL="http://localhost:3000"
-
-# Email
-RESEND_API_KEY="re_..."           # Production email
-MAILPIT_SMTP_HOST="localhost"     # Local email testing
-MAILPIT_SMTP_PORT="1025"
-
-# Cache & Rate Limiting
-REDIS_URL="redis://localhost:6379"
-
-# Application
-NODE_ENV="development"
-PORT="3000"
-LOG_LEVEL="debug"
-
-# Feature Flags
-ENABLE_WEBSOCKET="true"
-ENABLE_PUSH="false"
-ENABLE_SMS="false"
-```
-
-See [docs/28-ENVIRONMENT-CONFIG.md](./docs/28-ENVIRONMENT-CONFIG.md) for all variables.
-
----
-
-## API Endpoints
-
-### Notifications
-
-```bash
-POST   /api/notifications/send           # Send single notification
-POST   /api/notifications/batch          # Send batch
-GET    /api/notifications/:id            # Get notification
-DELETE /api/notifications/:id            # Cancel notification
-POST   /api/notifications/:id/resend     # Resend notification
-GET    /api/notifications/stats          # Get statistics
-```
-
-### Templates
-
-```bash
-GET    /api/templates                    # List templates
-POST   /api/templates                    # Create template
-GET    /api/templates/:id                # Get template
-PUT    /api/templates/:id                # Update template
-DELETE /api/templates/:id                # Delete template
-POST   /api/templates/:id/preview        # Preview template
-POST   /api/templates/:id/publish        # Publish template
-```
-
-### User Preferences
-
-```bash
-GET    /api/preferences/:userId          # Get preferences
-PUT    /api/preferences/:userId          # Update preferences
-POST   /api/preferences/subscribe        # Subscribe
-POST   /api/preferences/unsubscribe      # Unsubscribe
-```
-
-### Webhooks
-
-```bash
-POST   /api/webhooks/inbound             # Receive external events
-POST   /api/webhooks/resend              # Resend delivery status
-```
-
-### Health Check
-
-```bash
-GET    /api/health                       # Health check
-```
-
-See [docs/35-API-REFERENCE.md](./docs/35-API-REFERENCE.md) for complete API docs.
-
----
-
-## Testing
-
-### Unit Tests
-
-```bash
-pnpm test src/core/use-cases/notifications/send-notification.use-case.test.ts
-```
-
-### Integration Tests
-
-```bash
-pnpm test tests/integration/api/notifications.test.ts
-```
-
-### E2E Tests
-
-```bash
-pnpm test:e2e
-```
-
-### Coverage
-
-```bash
-pnpm test:ci
-# Target: ≥ 80% coverage
-```
-
-See [docs/22-TESTING-STRATEGY.md](./docs/22-TESTING-STRATEGY.md) for testing guide.
-
----
-
-## Deployment
-
-### Environments
-
-| Environment | Branch | URL | Database |
-|------------|--------|-----|----------|
-| **Development** | `develop` | localhost:3000 | Local/Neon dev |
-| **Staging** | `develop` | staging.zuno.market | Neon staging |
-| **Production** | `main` | notifications.zuno.market | Neon prod |
-
-### Deploy to Production
-
-```bash
-# 1. Merge to main (via PR)
-git checkout main
-git pull origin main
-
-# 2. Vercel deploys automatically
-
-# 3. Run migrations (if needed)
-DATABASE_URL="prod_url" pnpm db:migrate:deploy
-
-# 4. Monitor health
-curl https://notifications.zuno.market/api/health
-```
-
-See [docs/27-DEPLOYMENT.md](./docs/27-DEPLOYMENT.md) for full deployment guide.
-
----
-
-## Observability
-
-### Logging
-
-Structured JSON logs with correlation IDs:
-
-```json
-{
-  "level": "info",
-  "timestamp": "2025-01-06T12:34:56.789Z",
-  "correlationId": "abc123",
-  "message": "Notification sent",
-  "context": {
-    "notificationId": "xyz789",
-    "channel": "email",
-    "userId": "user123"
-  }
-}
-```
-
-### Metrics
-
-Key metrics tracked:
-
-- Notification sent/delivered/failed counts
-- Delivery latency (P50, P95, P99)
-- Queue depth
-- Channel error rates
-
-### Health Check
-
-```bash
-curl http://localhost:3000/api/health
-```
-
-Response:
-
-```json
-{
-  "status": "healthy",
-  "timestamp": "2025-01-06T12:34:56.789Z",
-  "checks": {
-    "database": "healthy",
-    "cache": "healthy",
-    "email": "healthy"
-  }
-}
-```
-
-See [docs/19-LOGGING.md](./docs/19-LOGGING.md) and [docs/20-METRICS.md](./docs/20-METRICS.md).
-
----
-
-## Contributing
-
-### Development Process
-
-1. Create feature branch from `develop`
-2. Make changes following [coding standards](./docs/29-CODING-STANDARDS.md)
-3. Write tests (≥ 80% coverage)
-4. Run pre-push checks
-5. Create PR using [template](./.github/PULL_REQUEST_TEMPLATE.md)
-6. Address review comments
-7. Squash and merge to `develop`
-
-### Coding Standards
-
-- **TypeScript**: Strict mode, no `any`
-- **Imports**: Sorted by category (external → internal)
-- **Naming**: PascalCase for components, camelCase for functions
-- **Comments**: Explain "why", not "what"
-- **Error Handling**: Always use try-catch, log errors
-- **Logging**: Use logger, never `console.log`
-
-See [docs/29-CODING-STANDARDS.md](./docs/29-CODING-STANDARDS.md) for complete standards.
-
----
-
-## Roadmap
-
-### Phase 1: Foundation (Weeks 1-2) ✅
-- [x] Project setup
-- [x] Database schema
-- [x] Authentication (Better-Auth)
-- [x] Basic API endpoints
-
-### Phase 2: Core Features (Weeks 3-4) 🚧
-- [ ] Email channel (Resend)
-- [ ] Outbox pattern
-- [ ] Retry mechanism
-- [ ] Template system
-
-### Phase 3: Advanced (Weeks 5-6) 📅
-- [ ] WebSocket channel
-- [ ] Admin UI (shadcn/ui)
-- [ ] Observability (logging, metrics)
-- [ ] Rate limiting
-
-### Phase 4: Production (Weeks 7-8) 📅
-- [ ] CI/CD pipeline
-- [ ] Security hardening
-- [ ] Performance optimization
-- [ ] Documentation completion
-
-### Future (v1.1+)
-- [ ] Push notifications (Firebase, APNs)
-- [ ] SMS notifications (Twilio)
-- [ ] A/B testing
-- [ ] Analytics dashboard
-- [ ] Multi-language support (i18n)
-
----
-
-## Troubleshooting
-
-### Database Connection Issues
-
-```bash
-# Test connection
-pnpm db:studio
-
-# Reset database
-pnpm db:reset
-```
-
-### Docker Services Not Starting
-
-```bash
-# Check for port conflicts
-lsof -i :5432  # PostgreSQL
-lsof -i :6379  # Redis
-
-# Restart services
-pnpm docker:down
-pnpm docker:up
-```
-
-### Build Failures
-
-```bash
-# Clear Next.js cache
-rm -rf .next
-
-# Reinstall dependencies
-rm -rf node_modules
-pnpm install
-
-# Regenerate Prisma client
-pnpm db:generate
-```
-
-See [docs/36-TROUBLESHOOTING.md](./docs/36-TROUBLESHOOTING.md) for more solutions.
-
----
-
-## Support
-
-### Documentation
-
-- **Full Docs**: [docs/00-INDEX.md](./docs/00-INDEX.md)
-- **Architecture**: [docs/02-ARCHITECTURE.md](./docs/02-ARCHITECTURE.md)
-- **API Reference**: [docs/35-API-REFERENCE.md](./docs/35-API-REFERENCE.md)
-- **Troubleshooting**: [docs/36-TROUBLESHOOTING.md](./docs/36-TROUBLESHOOTING.md)
-
-### Contact
-
-- **Team Lead**: [TBD]
-- **GitHub Issues**: [Create Issue](https://github.com/zunokit/zuno-marketplace-notifications/issues)
-- **Slack**: #notifications (internal)
-
----
-
-## License
-
-Proprietary - © 2025 Zuno Marketplace. All rights reserved.
-
----
-
-## Acknowledgments
-
-Built with:
-- [Next.js](https://nextjs.org/)
-- [Prisma](https://www.prisma.io/)
-- [Better-Auth](https://better-auth.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
-- [Resend](https://resend.com/)
-- [TanStack Query](https://tanstack.com/query)
-
----
-
-**Status**: 🚧 Under active development
-**Last Updated**: 2025-01-06
-**Next Milestone**: Phase 2 - Email Channel Implementation
-</file>
-
 <file path="scripts/check-status.ts">
 /**
  * Check System Status Script
@@ -8881,6 +8527,134 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect()
+  })
+</file>
+
+<file path="scripts/test-all.ts">
+/**
+ * Run All Tests
+ *
+ * Comprehensive test suite that runs all test scripts.
+ *
+ * Run: npx tsx scripts/test-all.ts
+ */
+
+import 'dotenv/config'
+import { execSync } from 'child_process'
+import path from 'path'
+
+interface TestResult {
+  name: string
+  success: boolean
+  duration: number
+  error?: string
+}
+
+const tests = [
+  { name: 'System Status', script: 'check-status.ts' },
+  { name: 'Email Channel', script: 'test-email-channel.ts' },
+  { name: 'React Email Templates', script: 'test-react-email.ts' },
+  { name: 'Notification Flow', script: 'verify-notification-flow.ts' },
+  { name: 'Process Outbox', script: 'process-outbox.ts' },
+  { name: 'Webhook Service', script: 'test-webhook.ts' },
+  { name: 'Price Alerts', script: 'test-price-alerts.ts' },
+  { name: 'Rate Limiting', script: 'test-rate-limit.ts' },
+]
+
+async function runTest(name: string, script: string): Promise<TestResult> {
+  const startTime = Date.now()
+  const scriptPath = path.join(__dirname, script)
+
+  try {
+    console.log(`\n${'='.repeat(60)}`)
+    console.log(`Running: ${name}`)
+    console.log('='.repeat(60))
+
+    execSync(`npx tsx "${scriptPath}"`, {
+      stdio: 'inherit',
+      cwd: path.join(__dirname, '..'),
+    })
+
+    return {
+      name,
+      success: true,
+      duration: Date.now() - startTime,
+    }
+  } catch (error) {
+    return {
+      name,
+      success: false,
+      duration: Date.now() - startTime,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }
+  }
+}
+
+async function main() {
+  console.log('╔══════════════════════════════════════════════════════════╗')
+  console.log('║         ZUNO NOTIFICATIONS - COMPREHENSIVE TEST          ║')
+  console.log('╚══════════════════════════════════════════════════════════╝')
+  console.log('')
+  console.log(`Tests to run: ${tests.length}`)
+  console.log('Prerequisites:')
+  console.log('  - Docker services running (pnpm docker:up)')
+  console.log('  - Database migrated (pnpm db:migrate)')
+  console.log('')
+
+  const results: TestResult[] = []
+  const overallStart = Date.now()
+
+  for (const test of tests) {
+    const result = await runTest(test.name, test.script)
+    results.push(result)
+  }
+
+  const overallDuration = Date.now() - overallStart
+
+  // Print summary
+  console.log('\n')
+  console.log('╔══════════════════════════════════════════════════════════╗')
+  console.log('║                      TEST SUMMARY                        ║')
+  console.log('╚══════════════════════════════════════════════════════════╝')
+  console.log('')
+
+  const passed = results.filter((r) => r.success).length
+  const failed = results.filter((r) => !r.success).length
+
+  console.log('Results:')
+  console.log('─'.repeat(60))
+
+  for (const result of results) {
+    const status = result.success ? '✓ PASS' : '✗ FAIL'
+    const duration = `${(result.duration / 1000).toFixed(2)}s`
+    console.log(`  ${status.padEnd(8)} │ ${result.name.padEnd(30)} │ ${duration}`)
+    if (!result.success && result.error) {
+      console.log(`           │ Error: ${result.error.substring(0, 45)}...`)
+    }
+  }
+
+  console.log('─'.repeat(60))
+  console.log('')
+  console.log(`Total: ${results.length} tests`)
+  console.log(`Passed: ${passed}`)
+  console.log(`Failed: ${failed}`)
+  console.log(`Duration: ${(overallDuration / 1000).toFixed(2)}s`)
+  console.log('')
+
+  if (failed > 0) {
+    console.log('⚠️  Some tests failed. Check output above for details.')
+    process.exit(1)
+  } else {
+    console.log('✅ All tests passed!')
+    console.log('')
+    console.log('📧 View emails at: http://localhost:8025')
+  }
+}
+
+main()
+  .catch((e) => {
+    console.error('Test runner failed:', e)
+    process.exit(1)
   })
 </file>
 
@@ -11609,1685 +11383,6 @@ export class WatchlistService {
 }
 </file>
 
-<file path="src/emails/auction-won-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface AuctionWonEmailProps {
-  userName?: string
-  nftName?: string
-  bidAmount?: string
-}
-
-export const AuctionWonEmail = ({
-  userName = 'User',
-  nftName = 'NFT',
-  bidAmount = '0 ETH',
-}: AuctionWonEmailProps) => (
-  <Html>
-    <Head />
-    <Preview>Congratulations! You won the auction for {nftName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>🎉 Congratulations!</Heading>
-        <Text style={text}>Hi {userName},</Text>
-        <Text style={text}>
-          You won the auction for <strong>{nftName}</strong> with a bid of {bidAmount}!
-        </Text>
-        <Section style={buttonContainer}>
-          <Button style={button} href="https://zuno.market/my-nfts">
-            View Your NFT
-          </Button>
-        </Section>
-        <Hr style={hr} />
-        <Text style={footer}>© 2025 Zuno Marketplace. All rights reserved.</Text>
-      </Container>
-    </Body>
-  </Html>
-)
-
-export default AuctionWonEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-}
-
-const h1 = {
-  color: '#333',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '40px 0',
-  padding: '0',
-  textAlign: 'center' as const,
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '16px 0',
-  padding: '0 40px',
-}
-
-const buttonContainer = {
-  padding: '27px 0',
-  textAlign: 'center' as const,
-}
-
-const button = {
-  backgroundColor: '#10b981',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '200px',
-  padding: '12px',
-  margin: '0 auto',
-}
-
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '20px 0',
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  textAlign: 'center' as const,
-  margin: '20px 0',
-}
-</file>
-
-<file path="src/emails/nft/auction-outbid-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface AuctionOutbidEmailProps {
-  nftName: string
-  nftImage?: string
-  yourBid: number
-  newBid: number
-  auctionEndTime: string
-  auctionUrl?: string
-}
-
-export const AuctionOutbidEmail = ({
-  nftName,
-  nftImage,
-  yourBid,
-  newBid,
-  auctionEndTime,
-  auctionUrl,
-}: AuctionOutbidEmailProps) => {
-  const endDate = new Date(auctionEndTime)
-
-  return (
-    <Html>
-      <Head />
-      <Preview>You've been outbid on {nftName}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>⚠️ You've Been Outbid!</Heading>
-
-          {nftImage && (
-            <Img
-              src={nftImage}
-              alt={nftName}
-              style={nftImg}
-            />
-          )}
-
-          <Heading style={h2}>{nftName}</Heading>
-
-          <Section style={bidSection}>
-            <div style={bidRow}>
-              <Text style={bidLabel}>Your Bid:</Text>
-              <Text style={oldBid}>{yourBid} ETH</Text>
-            </div>
-            <div style={bidRow}>
-              <Text style={bidLabel}>New Highest Bid:</Text>
-              <Text style={newBidText}>{newBid} ETH</Text>
-            </div>
-          </Section>
-
-          <Text style={text}>
-            Someone has placed a higher bid on this NFT. The auction ends on{' '}
-            <strong>{endDate.toLocaleDateString()}</strong> at{' '}
-            <strong>{endDate.toLocaleTimeString()}</strong>.
-          </Text>
-
-          {auctionUrl && (
-            <Button style={button} href={auctionUrl}>
-              Place a New Bid
-            </Button>
-          )}
-
-          <Section style={tipsSection}>
-            <Text style={tipsText}>
-              💡 <strong>Tip:</strong> Consider increasing your bid before the auction ends to secure this NFT.
-            </Text>
-          </Section>
-
-          <Text style={footer}>
-            You're receiving this because you're bidding on this NFT.
-            <br />
-            Manage your preferences in your notification settings.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-export default AuctionOutbidEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
-
-const h1 = {
-  color: '#dc2626',
-  fontSize: '28px',
-  fontWeight: 'bold',
-  margin: '40px 0 20px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const h2 = {
-  color: '#333',
-  fontSize: '22px',
-  fontWeight: 'bold',
-  margin: '20px 0',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const nftImg = {
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  margin: '0 40px 20px',
-  maxWidth: '520px',
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const bidSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '24px',
-}
-
-const bidRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-}
-
-const bidLabel = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: 0,
-}
-
-const oldBid = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: 'bold',
-  margin: 0,
-  textDecoration: 'line-through',
-}
-
-const newBidText = {
-  color: '#dc2626',
-  fontSize: '18px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '250px',
-  padding: '14px 7px',
-  margin: '32px auto',
-}
-
-const tipsSection = {
-  backgroundColor: '#fef3c7',
-  borderRadius: '8px',
-  margin: '32px 40px',
-  padding: '16px 24px',
-}
-
-const tipsText = {
-  color: '#78350f',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: 0,
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
-  textAlign: 'center' as const,
-}
-</file>
-
-<file path="src/emails/nft/drop-announcement-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface DropAnnouncementEmailProps {
-  dropName: string
-  description: string
-  dropImage?: string
-  startTime: string
-  totalSupply?: number
-  pricePerNFT?: number
-  mintUrl?: string
-}
-
-export const DropAnnouncementEmail = ({
-  dropName,
-  description,
-  dropImage,
-  startTime,
-  totalSupply,
-  pricePerNFT,
-  mintUrl,
-}: DropAnnouncementEmailProps) => {
-  const startDate = new Date(startTime)
-
-  return (
-    <Html>
-      <Head />
-      <Preview>New NFT Drop: {dropName}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>🚀 New Drop Announced!</Heading>
-
-          {dropImage && (
-            <Img
-              src={dropImage}
-              alt={dropName}
-              style={dropImg}
-            />
-          )}
-
-          <Heading style={h2}>{dropName}</Heading>
-
-          <Text style={descriptionStyle}>{description}</Text>
-
-          <Section style={detailsSection}>
-            <div style={detailRow}>
-              <Text style={detailLabel}>📅 Drop Date:</Text>
-              <Text style={detailValue}>{startDate.toLocaleDateString()}</Text>
-            </div>
-            <div style={detailRow}>
-              <Text style={detailLabel}>⏰ Time:</Text>
-              <Text style={detailValue}>{startDate.toLocaleTimeString()}</Text>
-            </div>
-            {totalSupply && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>🎨 Supply:</Text>
-                <Text style={detailValue}>{totalSupply} NFTs</Text>
-              </div>
-            )}
-            {pricePerNFT && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>💰 Price:</Text>
-                <Text style={detailValue}>{pricePerNFT} ETH</Text>
-              </div>
-            )}
-          </Section>
-
-          <Text style={text}>
-            Mark your calendar! You'll receive another notification when the drop is about to start.
-          </Text>
-
-          {mintUrl && (
-            <Button style={button} href={mintUrl}>
-              View Drop Details
-            </Button>
-          )}
-
-          <Section style={tipsSection}>
-            <Heading style={tipsHeading}>💡 Tips for Success</Heading>
-            <ul style={tipsList}>
-              <li style={tipsItem}>Make sure you have enough ETH + gas fees</li>
-              <li style={tipsItem}>Connect your wallet ahead of time</li>
-              <li style={tipsItem}>Be online 5 minutes before the drop</li>
-              <li style={tipsItem}>Have the mint page open and ready</li>
-            </ul>
-          </Section>
-
-          <Text style={footer}>
-            You're receiving this because you're watching this collection.
-            <br />
-            Manage your preferences in your notification settings.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-export default DropAnnouncementEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
-
-const h1 = {
-  color: '#333',
-  fontSize: '28px',
-  fontWeight: 'bold',
-  margin: '40px 0 20px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const h2 = {
-  color: '#333',
-  fontSize: '22px',
-  fontWeight: 'bold',
-  margin: '20px 0',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const dropImg = {
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  margin: '0 40px 20px',
-  maxWidth: '520px',
-}
-
-const descriptionStyle = {
-  color: '#555',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-  marginBottom: '32px',
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const detailsSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '24px',
-}
-
-const detailRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-}
-
-const detailLabel = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: 0,
-}
-
-const detailValue = {
-  color: '#333',
-  fontSize: '15px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '250px',
-  padding: '14px 7px',
-  margin: '32px auto',
-}
-
-const tipsSection = {
-  backgroundColor: '#fef3c7',
-  borderRadius: '8px',
-  margin: '32px 40px',
-  padding: '24px',
-}
-
-const tipsHeading = {
-  color: '#92400e',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  margin: '0 0 16px 0',
-}
-
-const tipsList = {
-  margin: 0,
-  padding: '0 0 0 20px',
-}
-
-const tipsItem = {
-  color: '#78350f',
-  fontSize: '14px',
-  lineHeight: '24px',
-  marginBottom: '8px',
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
-  textAlign: 'center' as const,
-}
-</file>
-
-<file path="src/emails/nft/floor-price-drop-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface FloorPriceDropEmailProps {
-  collectionName: string
-  collectionImage?: string
-  previousFloorPrice: number
-  currentFloorPrice: number
-  dropPercentage: number
-  marketplaceUrl?: string
-}
-
-export const FloorPriceDropEmail = ({
-  collectionName,
-  collectionImage,
-  previousFloorPrice,
-  currentFloorPrice,
-  dropPercentage,
-  marketplaceUrl,
-}: FloorPriceDropEmailProps) => {
-  return (
-    <Html>
-      <Head />
-      <Preview>Floor price dropped {dropPercentage.toFixed(1)}% for {collectionName}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>📉 Floor Price Alert!</Heading>
-
-          {collectionImage && (
-            <Img
-              src={collectionImage}
-              alt={collectionName}
-              style={collectionImg}
-            />
-          )}
-
-          <Text style={text}>
-            The floor price for <strong>{collectionName}</strong> has dropped significantly:
-          </Text>
-
-          <Section style={priceSection}>
-            <div style={priceRow}>
-              <Text style={priceLabel}>Previous Floor:</Text>
-              <Text style={oldPrice}>{previousFloorPrice} ETH</Text>
-            </div>
-            <div style={priceRow}>
-              <Text style={priceLabel}>Current Floor:</Text>
-              <Text style={newPrice}>{currentFloorPrice} ETH</Text>
-            </div>
-            <div style={priceRow}>
-              <Text style={priceLabel}>Drop:</Text>
-              <Text style={dropAmount}>-{dropPercentage.toFixed(1)}%</Text>
-            </div>
-          </Section>
-
-          <Text style={text}>
-            This could be a great buying opportunity! Check out the collection now.
-          </Text>
-
-          {marketplaceUrl && (
-            <Button style={button} href={marketplaceUrl}>
-              View Collection
-            </Button>
-          )}
-
-          <Text style={footer}>
-            You're receiving this because you're watching {collectionName}.
-            <br />
-            Manage your alerts in your notification preferences.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-export default FloorPriceDropEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
-
-const h1 = {
-  color: '#333',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '40px 0',
-  padding: '0 40px',
-}
-
-const collectionImg = {
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  margin: '0 40px',
-  maxWidth: '520px',
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-}
-
-const priceSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '20px',
-}
-
-const priceRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '12px',
-}
-
-const priceLabel = {
-  color: '#666',
-  fontSize: '14px',
-  margin: 0,
-}
-
-const oldPrice = {
-  color: '#999',
-  fontSize: '18px',
-  fontWeight: 'bold',
-  textDecoration: 'line-through',
-  margin: 0,
-}
-
-const newPrice = {
-  color: '#10b981',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const dropAmount = {
-  color: '#ef4444',
-  fontSize: '20px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '200px',
-  padding: '14px 7px',
-  margin: '24px auto',
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
-}
-</file>
-
-<file path="src/emails/nft/mint-success-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface MintSuccessEmailProps {
-  nftName: string
-  nftImage?: string
-  nftId?: string
-  transactionHash: string
-  explorerUrl?: string
-  marketplaceUrl?: string
-}
-
-export const MintSuccessEmail = ({
-  nftName,
-  nftImage,
-  nftId,
-  transactionHash,
-  explorerUrl,
-  marketplaceUrl,
-}: MintSuccessEmailProps) => {
-  return (
-    <Html>
-      <Head />
-      <Preview>Successfully minted {nftName}!</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>🎉 Mint Successful!</Heading>
-
-          {nftImage && (
-            <Img
-              src={nftImage}
-              alt={nftName}
-              style={nftImg}
-            />
-          )}
-
-          <Heading style={h2}>{nftName}</Heading>
-
-          <Section style={successSection}>
-            <Text style={successText}>
-              ✅ Your NFT has been successfully minted!
-            </Text>
-          </Section>
-
-          <Section style={detailsSection}>
-            {nftId && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>Token ID:</Text>
-                <Text style={detailValue}>#{nftId}</Text>
-              </div>
-            )}
-            <div style={detailRow}>
-              <Text style={detailLabel}>Transaction:</Text>
-              <Text style={detailValueSmall}>
-                {transactionHash.slice(0, 8)}...{transactionHash.slice(-6)}
-              </Text>
-            </div>
-          </Section>
-
-          <Text style={text}>
-            Congratulations! Your NFT is now in your wallet and will appear in your collection shortly.
-          </Text>
-
-          <div style={buttonContainer}>
-            {explorerUrl && (
-              <Button style={button} href={explorerUrl}>
-                View on Explorer
-              </Button>
-            )}
-            {marketplaceUrl && (
-              <Button style={buttonSecondary} href={marketplaceUrl}>
-                View in Gallery
-              </Button>
-            )}
-          </div>
-
-          <Section style={tipsSection}>
-            <Heading style={tipsHeading}>🚀 What's Next?</Heading>
-            <ul style={tipsList}>
-              <li style={tipsItem}>Your NFT will appear in your wallet within a few minutes</li>
-              <li style={tipsItem}>You can view, transfer, or list it for sale</li>
-              <li style={tipsItem}>Check out the collection to see other mints</li>
-              <li style={tipsItem}>Share your new NFT with the community!</li>
-            </ul>
-          </Section>
-
-          <Text style={footer}>
-            You're receiving this because you minted an NFT.
-            <br />
-            Manage your preferences in your notification settings.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-export default MintSuccessEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
-
-const h1 = {
-  color: '#059669',
-  fontSize: '28px',
-  fontWeight: 'bold',
-  margin: '40px 0 20px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const h2 = {
-  color: '#333',
-  fontSize: '22px',
-  fontWeight: 'bold',
-  margin: '20px 0',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const nftImg = {
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  margin: '0 40px 20px',
-  maxWidth: '520px',
-}
-
-const successSection = {
-  backgroundColor: '#d1fae5',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '20px',
-  textAlign: 'center' as const,
-}
-
-const successText = {
-  color: '#047857',
-  fontSize: '18px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const detailsSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '24px',
-}
-
-const detailRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-}
-
-const detailLabel = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: 0,
-}
-
-const detailValue = {
-  color: '#333',
-  fontSize: '15px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const detailValueSmall = {
-  color: '#333',
-  fontSize: '13px',
-  fontWeight: 'bold',
-  margin: 0,
-  fontFamily: 'monospace',
-}
-
-const buttonContainer = {
-  textAlign: 'center' as const,
-  margin: '32px auto',
-}
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '14px 24px',
-  margin: '8px',
-}
-
-const buttonSecondary = {
-  backgroundColor: '#6b7280',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'inline-block',
-  padding: '14px 24px',
-  margin: '8px',
-}
-
-const tipsSection = {
-  backgroundColor: '#fef3c7',
-  borderRadius: '8px',
-  margin: '32px 40px',
-  padding: '24px',
-}
-
-const tipsHeading = {
-  color: '#92400e',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  margin: '0 0 16px 0',
-}
-
-const tipsList = {
-  margin: 0,
-  padding: '0 0 0 20px',
-}
-
-const tipsItem = {
-  color: '#78350f',
-  fontSize: '14px',
-  lineHeight: '24px',
-  marginBottom: '8px',
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
-  textAlign: 'center' as const,
-}
-</file>
-
-<file path="src/emails/nft/royalty-received-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Img,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface RoyaltyReceivedEmailProps {
-  nftName: string
-  nftImage?: string
-  royaltyAmount: number
-  salePrice: number
-  royaltyPercentage: number
-  buyerAddress?: string
-  transactionHash?: string
-  dashboardUrl?: string
-}
-
-export const RoyaltyReceivedEmail = ({
-  nftName,
-  nftImage,
-  royaltyAmount,
-  salePrice,
-  royaltyPercentage,
-  buyerAddress,
-  transactionHash,
-  dashboardUrl,
-}: RoyaltyReceivedEmailProps) => {
-  return (
-    <Html>
-      <Head />
-      <Preview>You received {royaltyAmount.toFixed(4)} ETH in royalties from {nftName}</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>💰 Royalty Payment Received!</Heading>
-
-          {nftImage && (
-            <Img
-              src={nftImage}
-              alt={nftName}
-              style={nftImg}
-            />
-          )}
-
-          <Heading style={h2}>{nftName}</Heading>
-
-          <Section style={amountSection}>
-            <Text style={amountLabel}>You Received</Text>
-            <Text style={amountValue}>{royaltyAmount} ETH</Text>
-            <Text style={amountSubtext}>
-              {royaltyPercentage}% royalty from a {salePrice} ETH sale
-            </Text>
-          </Section>
-
-          <Section style={detailsSection}>
-            <div style={detailRow}>
-              <Text style={detailLabel}>Sale Price:</Text>
-              <Text style={detailValue}>{salePrice} ETH</Text>
-            </div>
-            <div style={detailRow}>
-              <Text style={detailLabel}>Royalty Rate:</Text>
-              <Text style={detailValue}>{royaltyPercentage}%</Text>
-            </div>
-            {buyerAddress && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>Buyer:</Text>
-                <Text style={detailValueSmall}>
-                  {buyerAddress.slice(0, 6)}...{buyerAddress.slice(-4)}
-                </Text>
-              </div>
-            )}
-            {transactionHash && (
-              <div style={detailRow}>
-                <Text style={detailLabel}>Transaction:</Text>
-                <Text style={detailValueSmall}>
-                  {transactionHash.slice(0, 6)}...{transactionHash.slice(-4)}
-                </Text>
-              </div>
-            )}
-          </Section>
-
-          <Text style={text}>
-            Congratulations! Your NFT has been resold and you've received your creator royalty.
-            The payment has been sent to your wallet.
-          </Text>
-
-          {dashboardUrl && (
-            <Button style={button} href={dashboardUrl}>
-              View Earnings Dashboard
-            </Button>
-          )}
-
-          <Section style={tipsSection}>
-            <Heading style={tipsHeading}>📊 Track Your Royalties</Heading>
-            <Text style={tipsText}>
-              View all your royalty earnings, track sales history, and analyze your NFT performance
-              in your creator dashboard.
-            </Text>
-          </Section>
-
-          <Text style={footer}>
-            You're receiving this because you're the creator of this NFT.
-            <br />
-            Manage your preferences in your notification settings.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-export default RoyaltyReceivedEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
-
-const h1 = {
-  color: '#059669',
-  fontSize: '28px',
-  fontWeight: 'bold',
-  margin: '40px 0 20px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const h2 = {
-  color: '#333',
-  fontSize: '22px',
-  fontWeight: 'bold',
-  margin: '20px 0',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const nftImg = {
-  width: '100%',
-  height: 'auto',
-  borderRadius: '12px',
-  margin: '0 40px 20px',
-  maxWidth: '520px',
-}
-
-const amountSection = {
-  backgroundColor: '#d1fae5',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '32px 24px',
-  textAlign: 'center' as const,
-}
-
-const amountLabel = {
-  color: '#065f46',
-  fontSize: '14px',
-  fontWeight: '600',
-  margin: '0 0 8px 0',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.5px',
-}
-
-const amountValue = {
-  color: '#059669',
-  fontSize: '36px',
-  fontWeight: 'bold',
-  margin: '0 0 8px 0',
-}
-
-const amountSubtext = {
-  color: '#047857',
-  fontSize: '14px',
-  margin: 0,
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const detailsSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '24px',
-}
-
-const detailRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-}
-
-const detailLabel = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: 0,
-}
-
-const detailValue = {
-  color: '#333',
-  fontSize: '15px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const detailValueSmall = {
-  color: '#333',
-  fontSize: '13px',
-  fontWeight: 'bold',
-  margin: 0,
-  fontFamily: 'monospace',
-}
-
-const button = {
-  backgroundColor: '#059669',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '250px',
-  padding: '14px 7px',
-  margin: '32px auto',
-}
-
-const tipsSection = {
-  backgroundColor: '#ede9fe',
-  borderRadius: '8px',
-  margin: '32px 40px',
-  padding: '24px',
-}
-
-const tipsHeading = {
-  color: '#5b21b6',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  margin: '0 0 8px 0',
-}
-
-const tipsText = {
-  color: '#6b21a8',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: 0,
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
-  textAlign: 'center' as const,
-}
-</file>
-
-<file path="src/emails/nft/whitelist-approved-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface WhitelistApprovedEmailProps {
-  dropName: string
-  spots: number
-  startTime: string
-  mintUrl?: string
-}
-
-export const WhitelistApprovedEmail = ({
-  dropName,
-  spots,
-  startTime,
-  mintUrl,
-}: WhitelistApprovedEmailProps) => {
-  const startDate = new Date(startTime)
-
-  return (
-    <Html>
-      <Head />
-      <Preview>You're approved for the {dropName} whitelist!</Preview>
-      <Body style={main}>
-        <Container style={container}>
-          <Heading style={h1}>🎊 Whitelist Approved!</Heading>
-
-          <Section style={approvedSection}>
-            <Text style={approvedText}>
-              ✅ Congratulations! You've been approved for the whitelist.
-            </Text>
-          </Section>
-
-          <Heading style={h2}>{dropName}</Heading>
-
-          <Section style={detailsSection}>
-            <div style={detailRow}>
-              <Text style={detailLabel}>Your Spots:</Text>
-              <Text style={detailValue}>{spots}</Text>
-            </div>
-            <div style={detailRow}>
-              <Text style={detailLabel}>📅 Drop Date:</Text>
-              <Text style={detailValue}>{startDate.toLocaleDateString()}</Text>
-            </div>
-            <div style={detailRow}>
-              <Text style={detailLabel}>⏰ Time:</Text>
-              <Text style={detailValue}>{startDate.toLocaleTimeString()}</Text>
-            </div>
-          </Section>
-
-          <Text style={text}>
-            You've secured {spots} {spots === 1 ? 'spot' : 'spots'} on the whitelist for this exclusive drop.
-            Make sure you're ready to mint when the drop goes live!
-          </Text>
-
-          {mintUrl && (
-            <Button style={button} href={mintUrl}>
-              Go to Mint Page
-            </Button>
-          )}
-
-          <Section style={tipsSection}>
-            <Heading style={tipsHeading}>⚡ Preparation Checklist</Heading>
-            <ul style={tipsList}>
-              <li style={tipsItem}>
-                <strong>Connect your wallet</strong> - Make sure it's the same wallet you used to apply
-              </li>
-              <li style={tipsItem}>
-                <strong>Fund your wallet</strong> - Ensure you have enough ETH + gas fees
-              </li>
-              <li style={tipsItem}>
-                <strong>Set a reminder</strong> - Be online 5 minutes before the drop starts
-              </li>
-              <li style={tipsItem}>
-                <strong>Have the mint page open</strong> - Don't wait until the last second
-              </li>
-              <li style={tipsItem}>
-                <strong>Check gas settings</strong> - Use recommended gas to ensure transaction goes through
-              </li>
-            </ul>
-          </Section>
-
-          <Section style={urgentSection}>
-            <Text style={urgentText}>
-              ⚠️ <strong>Important:</strong> You'll receive another notification when the drop is about to start.
-              Whitelist spots are guaranteed, but they don't reserve indefinitely - mint promptly when the drop goes live!
-            </Text>
-          </Section>
-
-          <Text style={footer}>
-            You're receiving this because you applied for this drop's whitelist.
-            <br />
-            Manage your preferences in your notification settings.
-          </Text>
-        </Container>
-      </Body>
-    </Html>
-  )
-}
-
-export default WhitelistApprovedEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-  maxWidth: '600px',
-}
-
-const h1 = {
-  color: '#7c3aed',
-  fontSize: '28px',
-  fontWeight: 'bold',
-  margin: '40px 0 20px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const h2 = {
-  color: '#333',
-  fontSize: '22px',
-  fontWeight: 'bold',
-  margin: '20px 0',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const approvedSection = {
-  backgroundColor: '#ede9fe',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '20px',
-  textAlign: 'center' as const,
-}
-
-const approvedText = {
-  color: '#5b21b6',
-  fontSize: '18px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  padding: '0 40px',
-  textAlign: 'center' as const,
-}
-
-const detailsSection = {
-  backgroundColor: '#f4f4f4',
-  borderRadius: '8px',
-  margin: '24px 40px',
-  padding: '24px',
-}
-
-const detailRow = {
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  marginBottom: '16px',
-}
-
-const detailLabel = {
-  color: '#666',
-  fontSize: '15px',
-  fontWeight: '600',
-  margin: 0,
-}
-
-const detailValue = {
-  color: '#333',
-  fontSize: '15px',
-  fontWeight: 'bold',
-  margin: 0,
-}
-
-const button = {
-  backgroundColor: '#7c3aed',
-  borderRadius: '5px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '250px',
-  padding: '14px 7px',
-  margin: '32px auto',
-}
-
-const tipsSection = {
-  backgroundColor: '#fef3c7',
-  borderRadius: '8px',
-  margin: '32px 40px',
-  padding: '24px',
-}
-
-const tipsHeading = {
-  color: '#92400e',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  margin: '0 0 16px 0',
-}
-
-const tipsList = {
-  margin: 0,
-  padding: '0 0 0 20px',
-}
-
-const tipsItem = {
-  color: '#78350f',
-  fontSize: '14px',
-  lineHeight: '24px',
-  marginBottom: '12px',
-}
-
-const urgentSection = {
-  backgroundColor: '#fee2e2',
-  borderRadius: '8px',
-  margin: '32px 40px',
-  padding: '16px 24px',
-}
-
-const urgentText = {
-  color: '#991b1b',
-  fontSize: '14px',
-  lineHeight: '24px',
-  margin: 0,
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  padding: '0 40px',
-  marginTop: '32px',
-  textAlign: 'center' as const,
-}
-</file>
-
-<file path="src/emails/welcome-email.tsx">
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface WelcomeEmailProps {
-  userName?: string
-  organizationName?: string
-}
-
-export const WelcomeEmail = ({
-  userName = 'User',
-  organizationName = 'Zuno Marketplace',
-}: WelcomeEmailProps) => (
-  <Html>
-    <Head />
-    <Preview>Welcome to {organizationName}!</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Heading style={h1}>Welcome to {organizationName}!</Heading>
-        <Text style={text}>Hi {userName},</Text>
-        <Text style={text}>
-          We're excited to have you on board. Get started by exploring our platform.
-        </Text>
-        <Section style={buttonContainer}>
-          <Button style={button} href="https://zuno.market">
-            Get Started
-          </Button>
-        </Section>
-        <Hr style={hr} />
-        <Text style={footer}>
-          © 2025 {organizationName}. All rights reserved.
-        </Text>
-      </Container>
-    </Body>
-  </Html>
-)
-
-export default WelcomeEmail
-
-const main = {
-  backgroundColor: '#f6f9fc',
-  fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
-}
-
-const container = {
-  backgroundColor: '#ffffff',
-  margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
-}
-
-const h1 = {
-  color: '#333',
-  fontSize: '24px',
-  fontWeight: 'bold',
-  margin: '40px 0',
-  padding: '0',
-  textAlign: 'center' as const,
-}
-
-const text = {
-  color: '#333',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '16px 0',
-  padding: '0 40px',
-}
-
-const buttonContainer = {
-  padding: '27px 0',
-  textAlign: 'center' as const,
-}
-
-const button = {
-  backgroundColor: '#5469d4',
-  borderRadius: '4px',
-  color: '#fff',
-  fontSize: '16px',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  width: '200px',
-  padding: '12px',
-  margin: '0 auto',
-}
-
-const hr = {
-  borderColor: '#e6ebf1',
-  margin: '20px 0',
-}
-
-const footer = {
-  color: '#8898aa',
-  fontSize: '12px',
-  lineHeight: '16px',
-  textAlign: 'center' as const,
-  margin: '20px 0',
-}
-</file>
-
 <file path="src/infrastructure/cache/redis.client.ts">
 import { createClient, RedisClientType } from 'redis'
 
@@ -14373,78 +12468,113 @@ volumes:
   redis_data:
 </file>
 
-<file path="eslint.config.mjs">
-import js from '@eslint/js'
-import typescript from '@typescript-eslint/eslint-plugin'
-import tsParser from '@typescript-eslint/parser'
-import reactPlugin from 'eslint-plugin-react'
-import reactHooksPlugin from 'eslint-plugin-react-hooks'
-import globals from 'globals'
+<file path="README.md">
+# Zuno Marketplace Notifications
 
-export default [
-  js.configs.recommended,
-  {
-    files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
-    plugins: {
-      '@typescript-eslint': typescript,
-      react: reactPlugin,
-      'react-hooks': reactHooksPlugin,
-    },
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        ecmaVersion: 'latest',
-        sourceType: 'module',
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-      globals: {
-        ...globals.browser,
-        ...globals.node,
-        ...globals.es2021,
-        // React globals
-        React: 'writable',
-        JSX: 'writable',
-        // Jest globals
-        describe: 'readonly',
-        it: 'readonly',
-        test: 'readonly',
-        expect: 'readonly',
-        beforeEach: 'readonly',
-        afterEach: 'readonly',
-        beforeAll: 'readonly',
-        afterAll: 'readonly',
-        jest: 'readonly',
-      },
-    },
-    rules: {
-      // Disable base rule in favor of TypeScript version
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/no-explicit-any': 'warn',
-      'no-console': ['warn', { allow: ['warn', 'error'] }],
-      'no-undef': 'off', // TypeScript handles this
-      'react-hooks/rules-of-hooks': 'error',
-      'react-hooks/exhaustive-deps': 'warn',
-    },
-  },
-  {
-    ignores: [
-      '.next/**',
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      'coverage/**',
-      '**/*.config.js',
-      '**/*.config.mjs',
-      'src/infrastructure/database/generated/**',
-    ],
-  },
-]
+**Version**: 1.0.0
+**Status**: 🚧 Under Development
+**License**: Proprietary
+
+---
+
+## Overview
+
+Enterprise-grade, multi-channel notification service for the Zuno NFT Marketplace ecosystem. Delivers reliable, scalable, and observable notifications across Email, WebSocket, Push, and SMS channels.
+
+**Key Features:**
+*   **Multi-Channel Support**: Email, WebSocket, Push (future), SMS (future).
+*   **Reliable Delivery**: At-least-once semantics via Outbox Pattern.
+*   **Scalable Architecture**: Horizontal scaling with stateless workers.
+*   **Template Management**: Versioned templates with Handlebars.
+*   **Rate Limiting**: Per-channel and per-organization quotas.
+*   **RBAC**: Organization-based access control via Better-Auth.
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+*   Node.js 18.17.0+
+*   pnpm 8.0.0+
+*   Docker & Docker Compose
+*   NeonDB account
+*   Resend API key
+
+### Installation
+
+```bash
+# Clone repository
+git clone https://github.com/zunokit/zuno-marketplace-notifications.git
+cd zuno-marketplace-notifications
+
+# Install dependencies
+pnpm install
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your credentials
+
+# Start Docker services (PostgreSQL, Redis, Mailpit)
+pnpm docker:up
+
+# Run database migrations
+pnpm db:migrate
+
+# Seed database (optional)
+pnpm db:seed
+
+# Start development server
+pnpm dev
+
+# In separate terminal, start workers
+pnpm workers
+```
+
+Visit **http://localhost:3000**
+
+Local Email Testing: **http://localhost:8025** (Mailpit UI)
+
+---
+
+## Documentation
+
+For comprehensive documentation, refer to the `docs/` directory.
+
+*   **Project Overview & PDR**: [docs/project-overview-pdr.md](./docs/project-overview-pdr.md)
+*   **Codebase Summary**: [docs/codebase-summary.md](./docs/codebase-summary.md)
+*   **Code Standards**: [docs/code-standards.md](./docs/code-standards.md)
+*   **System Architecture**: [docs/system-architecture.md](./docs/system-architecture.md)
+
+---
+
+## Technology Stack
+
+*   **Framework**: Next.js 16 (App Router)
+*   **Language**: TypeScript 5
+*   **Database**: PostgreSQL (NeonDB) via Prisma ORM
+*   **Cache**: Redis
+*   **Authentication**: Better Auth
+*   **UI**: shadcn/ui + Tailwind CSS
+*   **Email**: Resend (prod) / Mailpit (dev)
+
+---
+
+## Contributing
+
+Please refer to [docs/code-standards.md](./docs/code-standards.md) for coding standards and the `.github/PULL_REQUEST_TEMPLATE.md` for PR guidelines.
+
+---
+
+## License
+
+Proprietary - © 2025 Zuno Marketplace. All rights reserved.
+
+---
+
+**Status**: 🚧 Under active development
+**Last Updated**: 2025-12-14
+**Next Milestone**: Phase 2 - Core Features (Email Channel, Outbox, Retry, Template System)
 </file>
 
 <file path="scripts/README.md">
@@ -15356,6 +13486,4313 @@ export class Email {
 }
 </file>
 
+<file path="src/emails/auction-won-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface AuctionWonEmailProps {
+  userName?: string
+  nftName?: string
+  nftImage?: string
+  bidAmount?: string
+  collectionName?: string
+  auctionEndTime?: string
+}
+
+export const AuctionWonEmail = ({
+  userName = 'User',
+  nftName = 'Amazing NFT',
+  nftImage,
+  bidAmount = '0.5 ETH',
+  collectionName = 'Genesis Collection',
+  auctionEndTime,
+}: AuctionWonEmailProps) => {
+  const endDate = auctionEndTime ? new Date(auctionEndTime) : null
+
+  return (
+    <Html>
+      <Head />
+      <Preview>Congratulations! You won the auction for {nftName}!</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Hero Section */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <Text style={heroEmoji}>🏆</Text>
+              <Heading style={heroTitle}>You Won!</Heading>
+              <Text style={heroSubtitle}>
+                Congratulations on your winning bid
+              </Text>
+            </div>
+          </Section>
+
+          {/* NFT Preview */}
+          <Section style={nftSection}>
+            {nftImage ? (
+              <Img
+                src={nftImage}
+                alt={nftName}
+                style={nftImageStyle}
+              />
+            ) : (
+              <div style={nftPlaceholder}>
+                <Text style={nftPlaceholderText}>🖼️</Text>
+              </div>
+            )}
+            <div style={nftInfo}>
+              <Text style={nftCollection}>{collectionName}</Text>
+              <Heading style={nftTitle}>{nftName}</Heading>
+            </div>
+          </Section>
+
+          {/* Content */}
+          <Section style={contentSection}>
+            <Text style={greeting}>Hi {userName},</Text>
+            <Text style={paragraph}>
+              Amazing news! Your bid has won the auction. The NFT is now being transferred to your wallet.
+            </Text>
+
+            {/* Winning Details */}
+            <Section style={detailsCard}>
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Winning Bid</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={detailValue}>{bidAmount}</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Status</Text>
+                </Column>
+                <Column align="right">
+                  <div style={statusBadge}>
+                    <Text style={statusText}>Transferring</Text>
+                  </div>
+                </Column>
+              </Row>
+              {endDate && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column>
+                      <Text style={detailLabel}>Auction Ended</Text>
+                    </Column>
+                    <Column align="right">
+                      <Text style={detailValueSmall}>
+                        {endDate.toLocaleDateString()} at {endDate.toLocaleTimeString()}
+                      </Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+            </Section>
+
+            {/* CTA */}
+            <Section style={ctaSection}>
+              <Button style={primaryButton} href="https://zuno.market/my-nfts">
+                View Your NFT
+              </Button>
+              <Button style={secondaryButton} href="https://zuno.market/explore">
+                Explore More
+              </Button>
+            </Section>
+          </Section>
+
+          {/* Next Steps */}
+          <Section style={stepsSection}>
+            <Heading style={stepsTitle}>What happens next?</Heading>
+            <div style={stepItem}>
+              <Text style={stepNumber}>1</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>NFT Transfer</Text>
+                <Text style={stepDesc}>Your NFT will appear in your wallet within a few minutes</Text>
+              </div>
+            </div>
+            <div style={stepItem}>
+              <Text style={stepNumber}>2</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>View in Collection</Text>
+                <Text style={stepDesc}>Access your NFT from your profile gallery</Text>
+              </div>
+            </div>
+            <div style={stepItem}>
+              <Text style={stepNumber}>3</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>Share & Enjoy</Text>
+                <Text style={stepDesc}>Show off your new digital collectible!</Text>
+              </div>
+            </div>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerText}>
+                  © 2025 Zuno Marketplace. All rights reserved.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/privacy" style={footerLink}>Privacy Policy</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/terms" style={footerLink}>Terms of Service</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default AuctionWonEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '32px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '16px',
+  margin: '0',
+}
+
+const nftSection = {
+  padding: '32px 40px 0',
+  textAlign: 'center' as const,
+}
+
+const nftImageStyle = {
+  width: '100%',
+  maxWidth: '280px',
+  height: 'auto',
+  borderRadius: '16px',
+  margin: '0 auto 20px',
+  border: '2px solid #333',
+}
+
+const nftPlaceholder = {
+  width: '280px',
+  height: '280px',
+  backgroundColor: '#252525',
+  borderRadius: '16px',
+  margin: '0 auto 20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '2px solid #333',
+}
+
+const nftPlaceholderText = {
+  fontSize: '64px',
+  margin: '0',
+}
+
+const nftInfo = {
+  textAlign: 'center' as const,
+}
+
+const nftCollection = {
+  color: '#a78bfa',
+  fontSize: '13px',
+  fontWeight: '500',
+  margin: '0 0 4px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const nftTitle = {
+  color: '#ffffff',
+  fontSize: '22px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '32px 40px',
+}
+
+const greeting = {
+  color: '#ffffff',
+  fontSize: '18px',
+  fontWeight: '600',
+  margin: '0 0 12px',
+}
+
+const paragraph = {
+  color: '#a1a1aa',
+  fontSize: '15px',
+  lineHeight: '26px',
+  margin: '0 0 28px',
+}
+
+const detailsCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  border: '1px solid #333',
+}
+
+const detailRow = {
+  padding: '8px 0',
+}
+
+const detailLabel = {
+  color: '#71717a',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const detailValue = {
+  color: '#10b981',
+  fontSize: '18px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const detailValueSmall = {
+  color: '#a1a1aa',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const detailDivider = {
+  borderColor: '#333',
+  margin: '12px 0',
+}
+
+const statusBadge = {
+  backgroundColor: 'rgba(16, 185, 129, 0.15)',
+  borderRadius: '20px',
+  padding: '4px 12px',
+  display: 'inline-block',
+}
+
+const statusText = {
+  color: '#10b981',
+  fontSize: '13px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#10b981',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 32px',
+  border: 'none',
+  marginRight: '12px',
+}
+
+const secondaryButton = {
+  backgroundColor: 'transparent',
+  borderRadius: '10px',
+  color: '#a1a1aa',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 32px',
+  border: '1px solid #404040',
+}
+
+const stepsSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const stepsTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 20px',
+}
+
+const stepItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '16px',
+}
+
+const stepNumber = {
+  backgroundColor: '#10b981',
+  color: '#ffffff',
+  fontSize: '12px',
+  fontWeight: '700',
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  textAlign: 'center' as const,
+  lineHeight: '24px',
+  margin: '0 12px 0 0',
+  flexShrink: 0,
+}
+
+const stepContent = {
+  flex: 1,
+}
+
+const stepLabel = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 2px',
+}
+
+const stepDesc = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerText = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/nft/auction-outbid-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface AuctionOutbidEmailProps {
+  nftName: string
+  nftImage?: string
+  yourBid: number
+  newBid: number
+  auctionEndTime: string
+  auctionUrl?: string
+  collectionName?: string
+}
+
+export const AuctionOutbidEmail = ({
+  nftName,
+  nftImage,
+  yourBid,
+  newBid,
+  auctionEndTime,
+  auctionUrl,
+  collectionName = 'Collection',
+}: AuctionOutbidEmailProps) => {
+  const endDate = new Date(auctionEndTime)
+  const bidDifference = newBid - yourBid
+
+  return (
+    <Html>
+      <Head />
+      <Preview>You&apos;ve been outbid on {nftName} - Place a new bid now!</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Alert Hero */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <Text style={heroEmoji}>⚠️</Text>
+              <Heading style={heroTitle}>You&apos;ve Been Outbid!</Heading>
+              <Text style={heroSubtitle}>
+                Someone placed a higher bid on your watched item
+              </Text>
+            </div>
+          </Section>
+
+          {/* NFT Preview */}
+          <Section style={nftSection}>
+            {nftImage ? (
+              <Img
+                src={nftImage}
+                alt={nftName}
+                style={nftImageStyle}
+              />
+            ) : (
+              <div style={nftPlaceholder}>
+                <Text style={nftPlaceholderText}>🖼️</Text>
+              </div>
+            )}
+            <div style={nftInfo}>
+              <Text style={nftCollection}>{collectionName}</Text>
+              <Heading style={nftTitle}>{nftName}</Heading>
+            </div>
+          </Section>
+
+          {/* Bid Comparison */}
+          <Section style={contentSection}>
+            <Section style={bidComparisonCard}>
+              <Row>
+                <Column style={bidColumn}>
+                  <Text style={bidLabel}>Your Bid</Text>
+                  <Text style={yourBidValue}>{yourBid} ETH</Text>
+                </Column>
+                <Column style={arrowColumn}>
+                  <Text style={arrowIcon}>→</Text>
+                </Column>
+                <Column style={bidColumn}>
+                  <Text style={bidLabel}>New High Bid</Text>
+                  <Text style={newBidValue}>{newBid} ETH</Text>
+                </Column>
+              </Row>
+              <Hr style={bidDivider} />
+              <Row>
+                <Column>
+                  <Text style={differenceLabel}>Difference</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={differenceValue}>+{bidDifference.toFixed(4)} ETH</Text>
+                </Column>
+              </Row>
+            </Section>
+
+            {/* Urgency Timer */}
+            <Section style={timerCard}>
+              <Row>
+                <Column style={timerIconColumn}>
+                  <Text style={timerIcon}>⏰</Text>
+                </Column>
+                <Column>
+                  <Text style={timerLabel}>Auction Ends</Text>
+                  <Text style={timerValue}>
+                    {endDate.toLocaleDateString()} at {endDate.toLocaleTimeString()}
+                  </Text>
+                </Column>
+              </Row>
+            </Section>
+
+            {/* CTA */}
+            {auctionUrl && (
+              <Section style={ctaSection}>
+                <Button style={primaryButton} href={auctionUrl}>
+                  Place Higher Bid
+                </Button>
+                <Text style={ctaSubtext}>
+                  Don&apos;t miss out on this NFT!
+                </Text>
+              </Section>
+            )}
+          </Section>
+
+          {/* Tips Section */}
+          <Section style={tipsSection}>
+            <Heading style={tipsTitle}>💡 Bidding Tips</Heading>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Set a maximum bid to auto-outbid up to your limit</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Consider bidding in the final minutes for best results</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Make sure you have enough ETH + gas fees ready</Text>
+            </div>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you&apos;re bidding on this NFT.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Notifications</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default AuctionOutbidEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '15px',
+  margin: '0',
+}
+
+const nftSection = {
+  padding: '32px 40px 0',
+  textAlign: 'center' as const,
+}
+
+const nftImageStyle = {
+  width: '100%',
+  maxWidth: '200px',
+  height: 'auto',
+  borderRadius: '12px',
+  margin: '0 auto 16px',
+  border: '2px solid #333',
+}
+
+const nftPlaceholder = {
+  width: '200px',
+  height: '200px',
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  margin: '0 auto 16px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '2px solid #333',
+}
+
+const nftPlaceholderText = {
+  fontSize: '48px',
+  margin: '0',
+}
+
+const nftInfo = {
+  textAlign: 'center' as const,
+}
+
+const nftCollection = {
+  color: '#f59e0b',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 4px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const nftTitle = {
+  color: '#ffffff',
+  fontSize: '20px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '28px 40px',
+}
+
+const bidComparisonCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '24px',
+  marginBottom: '16px',
+  border: '1px solid #333',
+}
+
+const bidColumn = {
+  width: '45%',
+  textAlign: 'center' as const,
+}
+
+const arrowColumn = {
+  width: '10%',
+  textAlign: 'center' as const,
+}
+
+const bidLabel = {
+  color: '#71717a',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 8px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const yourBidValue = {
+  color: '#71717a',
+  fontSize: '20px',
+  fontWeight: '700',
+  margin: '0',
+  textDecoration: 'line-through',
+}
+
+const newBidValue = {
+  color: '#f59e0b',
+  fontSize: '24px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const arrowIcon = {
+  color: '#52525b',
+  fontSize: '20px',
+  margin: '24px 0 0',
+}
+
+const bidDivider = {
+  borderColor: '#333',
+  margin: '20px 0 16px',
+}
+
+const differenceLabel = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '0',
+}
+
+const differenceValue = {
+  color: '#ef4444',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const timerCard = {
+  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  borderRadius: '12px',
+  padding: '16px 20px',
+  marginBottom: '28px',
+  border: '1px solid rgba(239, 68, 68, 0.2)',
+}
+
+const timerIconColumn = {
+  width: '48px',
+}
+
+const timerIcon = {
+  fontSize: '24px',
+  margin: '0',
+}
+
+const timerLabel = {
+  color: '#fca5a5',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 2px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const timerValue = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#f59e0b',
+  borderRadius: '10px',
+  color: '#000000',
+  fontSize: '16px',
+  fontWeight: '700',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '16px 48px',
+  border: 'none',
+}
+
+const ctaSubtext = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '16px 0 0',
+}
+
+const tipsSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const tipsTitle = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+}
+
+const tipItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '10px',
+}
+
+const tipBullet = {
+  color: '#f59e0b',
+  fontSize: '14px',
+  margin: '0 10px 0 0',
+}
+
+const tipText = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  lineHeight: '20px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/nft/drop-announcement-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface DropAnnouncementEmailProps {
+  dropName: string
+  description: string
+  dropImage?: string
+  startTime: string
+  totalSupply?: number
+  pricePerNFT?: number
+  mintUrl?: string
+  creatorName?: string
+}
+
+export const DropAnnouncementEmail = ({
+  dropName,
+  description,
+  dropImage,
+  startTime,
+  totalSupply,
+  pricePerNFT,
+  mintUrl,
+  creatorName = 'Creator',
+}: DropAnnouncementEmailProps) => {
+  const startDate = new Date(startTime)
+
+  return (
+    <Html>
+      <Head />
+      <Preview>New NFT Drop: {dropName} - Mark your calendar!</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Hero Section */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <div style={dropBadge}>
+                <Text style={dropBadgeText}>UPCOMING DROP</Text>
+              </div>
+              <Text style={heroEmoji}>🚀</Text>
+              <Heading style={heroTitle}>{dropName}</Heading>
+              <Text style={heroCreator}>by {creatorName}</Text>
+            </div>
+          </Section>
+
+          {/* Drop Image */}
+          {dropImage && (
+            <Section style={imageSection}>
+              <Img
+                src={dropImage}
+                alt={dropName}
+                style={dropImageStyle}
+              />
+            </Section>
+          )}
+
+          {/* Content */}
+          <Section style={contentSection}>
+            <Text style={descriptionText}>{description}</Text>
+
+            {/* Drop Details */}
+            <Section style={detailsCard}>
+              <Row style={detailRow}>
+                <Column style={detailIconColumn}>
+                  <Text style={detailIcon}>📅</Text>
+                </Column>
+                <Column>
+                  <Text style={detailLabel}>Drop Date</Text>
+                  <Text style={detailValue}>{startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column style={detailIconColumn}>
+                  <Text style={detailIcon}>⏰</Text>
+                </Column>
+                <Column>
+                  <Text style={detailLabel}>Time</Text>
+                  <Text style={detailValue}>{startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</Text>
+                </Column>
+              </Row>
+              {totalSupply && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column style={detailIconColumn}>
+                      <Text style={detailIcon}>🎨</Text>
+                    </Column>
+                    <Column>
+                      <Text style={detailLabel}>Total Supply</Text>
+                      <Text style={detailValue}>{totalSupply.toLocaleString()} NFTs</Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+              {pricePerNFT !== undefined && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column style={detailIconColumn}>
+                      <Text style={detailIcon}>💎</Text>
+                    </Column>
+                    <Column>
+                      <Text style={detailLabel}>Mint Price</Text>
+                      <Text style={priceValue}>{pricePerNFT} ETH</Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+            </Section>
+
+            {/* CTA */}
+            {mintUrl && (
+              <Section style={ctaSection}>
+                <Button style={primaryButton} href={mintUrl}>
+                  View Drop Details
+                </Button>
+                <Text style={ctaSubtext}>
+                  Get notified when the drop goes live
+                </Text>
+              </Section>
+            )}
+          </Section>
+
+          {/* Preparation Checklist */}
+          <Section style={checklistSection}>
+            <Heading style={checklistTitle}>✅ Preparation Checklist</Heading>
+            <div style={checklistItem}>
+              <Text style={checkNumber}>1</Text>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Fund Your Wallet</Text>
+                <Text style={checkDesc}>Ensure you have enough ETH + gas fees</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <Text style={checkNumber}>2</Text>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Connect Early</Text>
+                <Text style={checkDesc}>Link your wallet before the drop starts</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <Text style={checkNumber}>3</Text>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Set a Reminder</Text>
+                <Text style={checkDesc}>Be online 5 minutes before launch</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <Text style={checkNumber}>4</Text>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Prepare for Gas</Text>
+                <Text style={checkDesc}>Use recommended gas settings for fast transactions</Text>
+              </div>
+            </div>
+          </Section>
+
+          {/* Reminder Note */}
+          <Section style={reminderSection}>
+            <Text style={reminderText}>
+              🔔 We&apos;ll send you another notification when the drop is about to go live!
+            </Text>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you&apos;re watching this collection.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Notifications</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default DropAnnouncementEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #6366f1 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const dropBadge = {
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  borderRadius: '20px',
+  padding: '6px 16px',
+  display: 'inline-block',
+  marginBottom: '16px',
+}
+
+const dropBadgeText = {
+  color: '#ffffff',
+  fontSize: '11px',
+  fontWeight: '700',
+  margin: '0',
+  letterSpacing: '1px',
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroCreator = {
+  color: 'rgba(255, 255, 255, 0.75)',
+  fontSize: '15px',
+  margin: '0',
+}
+
+const imageSection = {
+  padding: '24px 40px 0',
+}
+
+const dropImageStyle = {
+  width: '100%',
+  height: 'auto',
+  borderRadius: '12px',
+  border: '2px solid #333',
+}
+
+const contentSection = {
+  padding: '28px 40px',
+}
+
+const descriptionText = {
+  color: '#a1a1aa',
+  fontSize: '15px',
+  lineHeight: '26px',
+  margin: '0 0 28px',
+  textAlign: 'center' as const,
+}
+
+const detailsCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  border: '1px solid #333',
+}
+
+const detailRow = {
+  padding: '8px 0',
+}
+
+const detailIconColumn = {
+  width: '44px',
+}
+
+const detailIcon = {
+  fontSize: '20px',
+  margin: '0',
+}
+
+const detailLabel = {
+  color: '#71717a',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 2px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const detailValue = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const priceValue = {
+  color: '#a78bfa',
+  fontSize: '18px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const detailDivider = {
+  borderColor: '#333',
+  margin: '12px 0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#8b5cf6',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '16px 48px',
+  border: 'none',
+}
+
+const ctaSubtext = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '16px 0 0',
+}
+
+const checklistSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const checklistTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 20px',
+}
+
+const checklistItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '16px',
+}
+
+const checkNumber = {
+  backgroundColor: '#8b5cf6',
+  color: '#ffffff',
+  fontSize: '12px',
+  fontWeight: '700',
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  textAlign: 'center' as const,
+  lineHeight: '24px',
+  margin: '0 12px 0 0',
+  flexShrink: 0,
+}
+
+const checkContent = {
+  flex: 1,
+}
+
+const checkLabel = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 2px',
+}
+
+const checkDesc = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '0',
+}
+
+const reminderSection = {
+  backgroundColor: 'rgba(139, 92, 246, 0.1)',
+  margin: '24px',
+  borderRadius: '12px',
+  padding: '16px 24px',
+  textAlign: 'center' as const,
+  border: '1px solid rgba(139, 92, 246, 0.2)',
+}
+
+const reminderText = {
+  color: '#c4b5fd',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/nft/floor-price-drop-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface FloorPriceDropEmailProps {
+  collectionName: string
+  collectionImage?: string
+  previousFloorPrice: number
+  currentFloorPrice: number
+  dropPercentage: number
+  marketplaceUrl?: string
+  totalVolume?: string
+  itemCount?: number
+}
+
+export const FloorPriceDropEmail = ({
+  collectionName,
+  collectionImage,
+  previousFloorPrice,
+  currentFloorPrice,
+  dropPercentage,
+  marketplaceUrl,
+  totalVolume,
+  itemCount,
+}: FloorPriceDropEmailProps) => {
+  const savings = previousFloorPrice - currentFloorPrice
+
+  return (
+    <Html>
+      <Head />
+      <Preview>Floor price dropped {dropPercentage.toFixed(1)}% for {collectionName} - Great buying opportunity!</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Alert Hero */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <Text style={heroEmoji}>📉</Text>
+              <Heading style={heroTitle}>Floor Price Alert</Heading>
+              <Text style={heroSubtitle}>
+                Price dropped for a collection you&apos;re watching
+              </Text>
+            </div>
+          </Section>
+
+          {/* Collection Info */}
+          <Section style={collectionSection}>
+            {collectionImage ? (
+              <Img
+                src={collectionImage}
+                alt={collectionName}
+                style={collectionImageStyle}
+              />
+            ) : (
+              <div style={collectionPlaceholder}>
+                <Text style={collectionPlaceholderText}>🖼️</Text>
+              </div>
+            )}
+            <Heading style={collectionTitle}>{collectionName}</Heading>
+            {(totalVolume || itemCount) && (
+              <Row style={statsRow}>
+                {totalVolume && (
+                  <Column style={statColumn}>
+                    <Text style={statLabel}>Volume</Text>
+                    <Text style={statValue}>{totalVolume}</Text>
+                  </Column>
+                )}
+                {itemCount && (
+                  <Column style={statColumn}>
+                    <Text style={statLabel}>Items</Text>
+                    <Text style={statValue}>{itemCount.toLocaleString()}</Text>
+                  </Column>
+                )}
+              </Row>
+            )}
+          </Section>
+
+          {/* Price Comparison */}
+          <Section style={contentSection}>
+            <Section style={priceCard}>
+              <Row>
+                <Column style={priceColumn}>
+                  <Text style={priceLabel}>Previous Floor</Text>
+                  <Text style={previousPrice}>{previousFloorPrice} ETH</Text>
+                </Column>
+                <Column style={arrowColumn}>
+                  <Text style={arrowDown}>↓</Text>
+                </Column>
+                <Column style={priceColumn}>
+                  <Text style={priceLabel}>Current Floor</Text>
+                  <Text style={currentPrice}>{currentFloorPrice} ETH</Text>
+                </Column>
+              </Row>
+            </Section>
+
+            {/* Drop Stats */}
+            <Section style={dropStatsCard}>
+              <Row>
+                <Column style={dropStatColumn}>
+                  <div style={dropBadge}>
+                    <Text style={dropBadgeText}>-{dropPercentage.toFixed(1)}%</Text>
+                  </div>
+                  <Text style={dropStatLabel}>Price Drop</Text>
+                </Column>
+                <Column style={dropStatColumn}>
+                  <Text style={savingsValue}>{savings.toFixed(4)} ETH</Text>
+                  <Text style={dropStatLabel}>You Save</Text>
+                </Column>
+              </Row>
+            </Section>
+
+            {/* Opportunity Section */}
+            <Section style={opportunitySection}>
+              <Text style={opportunityIcon}>💡</Text>
+              <Text style={opportunityText}>
+                This could be a great buying opportunity! Floor prices at this level may not last long.
+              </Text>
+            </Section>
+
+            {/* CTA */}
+            {marketplaceUrl && (
+              <Section style={ctaSection}>
+                <Button style={primaryButton} href={marketplaceUrl}>
+                  View Collection
+                </Button>
+                <Text style={ctaSubtext}>
+                  Browse available NFTs at the new floor price
+                </Text>
+              </Section>
+            )}
+          </Section>
+
+          {/* Market Tips */}
+          <Section style={tipsSection}>
+            <Heading style={tipsTitle}>📊 Market Insights</Heading>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Floor price changes can indicate market sentiment shifts</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Compare with historical lows before making a decision</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Check the collection&apos;s recent activity and roadmap</Text>
+            </div>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you&apos;re watching {collectionName}.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Alerts</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default FloorPriceDropEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '15px',
+  margin: '0',
+}
+
+const collectionSection = {
+  padding: '32px 40px 0',
+  textAlign: 'center' as const,
+}
+
+const collectionImageStyle = {
+  width: '100px',
+  height: '100px',
+  borderRadius: '16px',
+  margin: '0 auto 16px',
+  border: '3px solid #333',
+  objectFit: 'cover' as const,
+}
+
+const collectionPlaceholder = {
+  width: '100px',
+  height: '100px',
+  backgroundColor: '#252525',
+  borderRadius: '16px',
+  margin: '0 auto 16px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '3px solid #333',
+}
+
+const collectionPlaceholderText = {
+  fontSize: '36px',
+  margin: '0',
+}
+
+const collectionTitle = {
+  color: '#ffffff',
+  fontSize: '22px',
+  fontWeight: '700',
+  margin: '0 0 16px',
+}
+
+const statsRow = {
+  marginBottom: '8px',
+}
+
+const statColumn = {
+  width: '50%',
+  textAlign: 'center' as const,
+}
+
+const statLabel = {
+  color: '#71717a',
+  fontSize: '11px',
+  fontWeight: '500',
+  margin: '0 0 2px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const statValue = {
+  color: '#a1a1aa',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '28px 40px',
+}
+
+const priceCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '24px',
+  marginBottom: '16px',
+  border: '1px solid #333',
+}
+
+const priceColumn = {
+  width: '42%',
+  textAlign: 'center' as const,
+}
+
+const arrowColumn = {
+  width: '16%',
+  textAlign: 'center' as const,
+}
+
+const priceLabel = {
+  color: '#71717a',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 8px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const previousPrice = {
+  color: '#71717a',
+  fontSize: '20px',
+  fontWeight: '700',
+  margin: '0',
+  textDecoration: 'line-through',
+}
+
+const currentPrice = {
+  color: '#22c55e',
+  fontSize: '24px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const arrowDown = {
+  color: '#22c55e',
+  fontSize: '28px',
+  margin: '16px 0 0',
+}
+
+const dropStatsCard = {
+  backgroundColor: 'rgba(34, 197, 94, 0.1)',
+  borderRadius: '12px',
+  padding: '24px',
+  marginBottom: '24px',
+  border: '1px solid rgba(34, 197, 94, 0.2)',
+}
+
+const dropStatColumn = {
+  width: '50%',
+  textAlign: 'center' as const,
+}
+
+const dropBadge = {
+  backgroundColor: '#22c55e',
+  borderRadius: '8px',
+  padding: '8px 16px',
+  display: 'inline-block',
+  marginBottom: '8px',
+}
+
+const dropBadgeText = {
+  color: '#ffffff',
+  fontSize: '18px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const savingsValue = {
+  color: '#22c55e',
+  fontSize: '20px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+}
+
+const dropStatLabel = {
+  color: '#86efac',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const opportunitySection = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  textAlign: 'center' as const,
+  border: '1px solid #333',
+}
+
+const opportunityIcon = {
+  fontSize: '24px',
+  margin: '0 0 8px',
+}
+
+const opportunityText = {
+  color: '#a1a1aa',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#22c55e',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '16px 48px',
+  border: 'none',
+}
+
+const ctaSubtext = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '16px 0 0',
+}
+
+const tipsSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const tipsTitle = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+}
+
+const tipItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '10px',
+}
+
+const tipBullet = {
+  color: '#22c55e',
+  fontSize: '14px',
+  margin: '0 10px 0 0',
+}
+
+const tipText = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  lineHeight: '20px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/nft/mint-success-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface MintSuccessEmailProps {
+  nftName: string
+  nftImage?: string
+  nftId?: string
+  transactionHash: string
+  explorerUrl?: string
+  marketplaceUrl?: string
+  collectionName?: string
+  mintPrice?: number
+}
+
+export const MintSuccessEmail = ({
+  nftName,
+  nftImage,
+  nftId,
+  transactionHash,
+  explorerUrl,
+  marketplaceUrl,
+  collectionName = 'Collection',
+  mintPrice,
+}: MintSuccessEmailProps) => {
+  return (
+    <Html>
+      <Head />
+      <Preview>Successfully minted {nftName}! Welcome to the collection.</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Success Hero */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <div style={successBadge}>
+                <Text style={successBadgeText}>✓ MINTED</Text>
+              </div>
+              <Text style={heroEmoji}>🎉</Text>
+              <Heading style={heroTitle}>Mint Successful!</Heading>
+              <Text style={heroSubtitle}>
+                Your new NFT is being transferred to your wallet
+              </Text>
+            </div>
+          </Section>
+
+          {/* NFT Preview */}
+          <Section style={nftSection}>
+            {nftImage ? (
+              <div style={nftImageContainer}>
+                <Img
+                  src={nftImage}
+                  alt={nftName}
+                  style={nftImageStyle}
+                />
+                <div style={confettiLeft}>🎊</div>
+                <div style={confettiRight}>🎊</div>
+              </div>
+            ) : (
+              <div style={nftPlaceholder}>
+                <Text style={nftPlaceholderText}>🖼️</Text>
+              </div>
+            )}
+            <div style={nftInfo}>
+              <Text style={nftCollection}>{collectionName}</Text>
+              <Heading style={nftTitle}>{nftName}</Heading>
+              {nftId && <Text style={nftTokenId}>Token #{nftId}</Text>}
+            </div>
+          </Section>
+
+          {/* Transaction Details */}
+          <Section style={contentSection}>
+            <Section style={detailsCard}>
+              <Text style={detailsTitle}>Transaction Details</Text>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Status</Text>
+                </Column>
+                <Column align="right">
+                  <div style={statusBadge}>
+                    <Text style={statusText}>Confirmed</Text>
+                  </div>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Transaction</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={hashValue}>
+                    {transactionHash.slice(0, 8)}...{transactionHash.slice(-6)}
+                  </Text>
+                </Column>
+              </Row>
+              {mintPrice !== undefined && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column>
+                      <Text style={detailLabel}>Mint Price</Text>
+                    </Column>
+                    <Column align="right">
+                      <Text style={priceValue}>{mintPrice} ETH</Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+            </Section>
+
+            {/* CTA Buttons */}
+            <Section style={ctaSection}>
+              {explorerUrl && (
+                <Button style={primaryButton} href={explorerUrl}>
+                  View on Explorer
+                </Button>
+              )}
+              {marketplaceUrl && (
+                <Button style={secondaryButton} href={marketplaceUrl}>
+                  View in Gallery
+                </Button>
+              )}
+            </Section>
+          </Section>
+
+          {/* What's Next */}
+          <Section style={stepsSection}>
+            <Heading style={stepsTitle}>🚀 What&apos;s Next?</Heading>
+            <div style={stepItem}>
+              <Text style={stepNumber}>1</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>NFT Transfer</Text>
+                <Text style={stepDesc}>Your NFT will appear in your wallet within a few minutes</Text>
+              </div>
+            </div>
+            <div style={stepItem}>
+              <Text style={stepNumber}>2</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>View in Collection</Text>
+                <Text style={stepDesc}>Access your NFT from your profile gallery</Text>
+              </div>
+            </div>
+            <div style={stepItem}>
+              <Text style={stepNumber}>3</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>List or Hold</Text>
+                <Text style={stepDesc}>Keep it in your collection or list it for sale</Text>
+              </div>
+            </div>
+            <div style={stepItem}>
+              <Text style={stepNumber}>4</Text>
+              <div style={stepContent}>
+                <Text style={stepLabel}>Share the News</Text>
+                <Text style={stepDesc}>Show off your new NFT to the community!</Text>
+              </div>
+            </div>
+          </Section>
+
+          {/* Social Share Prompt */}
+          <Section style={shareSection}>
+            <Text style={shareText}>
+              🐦 Share your mint on Twitter and tag us @zunomarket!
+            </Text>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you minted an NFT.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Notifications</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default MintSuccessEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const successBadge = {
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  borderRadius: '20px',
+  padding: '6px 16px',
+  display: 'inline-block',
+  marginBottom: '16px',
+}
+
+const successBadgeText = {
+  color: '#ffffff',
+  fontSize: '11px',
+  fontWeight: '700',
+  margin: '0',
+  letterSpacing: '1px',
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '15px',
+  margin: '0',
+}
+
+const nftSection = {
+  padding: '32px 40px 0',
+  textAlign: 'center' as const,
+}
+
+const nftImageContainer = {
+  position: 'relative' as const,
+  display: 'inline-block',
+}
+
+const nftImageStyle = {
+  width: '100%',
+  maxWidth: '280px',
+  height: 'auto',
+  borderRadius: '16px',
+  margin: '0 auto 20px',
+  border: '3px solid #10b981',
+  boxShadow: '0 0 30px rgba(16, 185, 129, 0.3)',
+}
+
+const confettiLeft = {
+  position: 'absolute' as const,
+  left: '-20px',
+  top: '20px',
+  fontSize: '32px',
+}
+
+const confettiRight = {
+  position: 'absolute' as const,
+  right: '-20px',
+  top: '20px',
+  fontSize: '32px',
+}
+
+const nftPlaceholder = {
+  width: '280px',
+  height: '280px',
+  backgroundColor: '#252525',
+  borderRadius: '16px',
+  margin: '0 auto 20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '3px solid #10b981',
+}
+
+const nftPlaceholderText = {
+  fontSize: '64px',
+  margin: '0',
+}
+
+const nftInfo = {
+  textAlign: 'center' as const,
+}
+
+const nftCollection = {
+  color: '#10b981',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 4px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const nftTitle = {
+  color: '#ffffff',
+  fontSize: '22px',
+  fontWeight: '700',
+  margin: '0 0 4px',
+}
+
+const nftTokenId = {
+  color: '#71717a',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '32px 40px',
+}
+
+const detailsCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  border: '1px solid #333',
+}
+
+const detailsTitle = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const detailRow = {
+  padding: '8px 0',
+}
+
+const detailLabel = {
+  color: '#71717a',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const detailDivider = {
+  borderColor: '#333',
+  margin: '12px 0',
+}
+
+const statusBadge = {
+  backgroundColor: 'rgba(16, 185, 129, 0.15)',
+  borderRadius: '20px',
+  padding: '4px 12px',
+  display: 'inline-block',
+}
+
+const statusText = {
+  color: '#10b981',
+  fontSize: '13px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const hashValue = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  fontFamily: 'monospace',
+  margin: '0',
+}
+
+const priceValue = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#10b981',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 32px',
+  border: 'none',
+  marginRight: '12px',
+}
+
+const secondaryButton = {
+  backgroundColor: 'transparent',
+  borderRadius: '10px',
+  color: '#a1a1aa',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 32px',
+  border: '1px solid #404040',
+}
+
+const stepsSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const stepsTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 20px',
+}
+
+const stepItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '16px',
+}
+
+const stepNumber = {
+  backgroundColor: '#10b981',
+  color: '#ffffff',
+  fontSize: '12px',
+  fontWeight: '700',
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  textAlign: 'center' as const,
+  lineHeight: '24px',
+  margin: '0 12px 0 0',
+  flexShrink: 0,
+}
+
+const stepContent = {
+  flex: 1,
+}
+
+const stepLabel = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 2px',
+}
+
+const stepDesc = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '0',
+}
+
+const shareSection = {
+  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  margin: '24px',
+  borderRadius: '12px',
+  padding: '16px 24px',
+  textAlign: 'center' as const,
+  border: '1px solid rgba(59, 130, 246, 0.2)',
+}
+
+const shareText = {
+  color: '#93c5fd',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/nft/royalty-received-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface RoyaltyReceivedEmailProps {
+  nftName: string
+  nftImage?: string
+  royaltyAmount: number
+  salePrice: number
+  royaltyPercentage: number
+  buyerAddress?: string
+  transactionHash?: string
+  dashboardUrl?: string
+  collectionName?: string
+}
+
+export const RoyaltyReceivedEmail = ({
+  nftName,
+  nftImage,
+  royaltyAmount,
+  salePrice,
+  royaltyPercentage,
+  buyerAddress,
+  transactionHash,
+  dashboardUrl,
+  collectionName = 'Collection',
+}: RoyaltyReceivedEmailProps) => {
+  return (
+    <Html>
+      <Head />
+      <Preview>You received {royaltyAmount.toFixed(4)} ETH in royalties from {nftName}!</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Success Hero */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <Text style={heroEmoji}>💰</Text>
+              <Heading style={heroTitle}>Royalty Received!</Heading>
+              <Text style={heroSubtitle}>
+                Your creation just sold on the secondary market
+              </Text>
+            </div>
+          </Section>
+
+          {/* Royalty Amount Card */}
+          <Section style={amountCardSection}>
+            <div style={amountCard}>
+              <Text style={amountLabel}>You Earned</Text>
+              <Text style={amountValue}>{royaltyAmount.toFixed(4)} ETH</Text>
+              <Text style={amountSubtext}>
+                {royaltyPercentage}% royalty from a {salePrice} ETH sale
+              </Text>
+            </div>
+          </Section>
+
+          {/* NFT Info */}
+          <Section style={nftSection}>
+            <Row>
+              <Column style={nftImageColumn}>
+                {nftImage ? (
+                  <Img
+                    src={nftImage}
+                    alt={nftName}
+                    style={nftImageStyle}
+                  />
+                ) : (
+                  <div style={nftPlaceholder}>
+                    <Text style={nftPlaceholderText}>🖼️</Text>
+                  </div>
+                )}
+              </Column>
+              <Column style={nftInfoColumn}>
+                <Text style={nftCollection}>{collectionName}</Text>
+                <Text style={nftTitle}>{nftName}</Text>
+                <Text style={soldLabel}>Sold for</Text>
+                <Text style={soldPrice}>{salePrice} ETH</Text>
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Transaction Details */}
+          <Section style={contentSection}>
+            <Section style={detailsCard}>
+              <Text style={detailsTitle}>Transaction Details</Text>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Sale Price</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={detailValue}>{salePrice} ETH</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Royalty Rate</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={detailValue}>{royaltyPercentage}%</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column>
+                  <Text style={detailLabel}>Your Earnings</Text>
+                </Column>
+                <Column align="right">
+                  <Text style={earningsValue}>{royaltyAmount.toFixed(4)} ETH</Text>
+                </Column>
+              </Row>
+              {buyerAddress && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column>
+                      <Text style={detailLabel}>Buyer</Text>
+                    </Column>
+                    <Column align="right">
+                      <Text style={hashValue}>
+                        {buyerAddress.slice(0, 6)}...{buyerAddress.slice(-4)}
+                      </Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+              {transactionHash && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column>
+                      <Text style={detailLabel}>Transaction</Text>
+                    </Column>
+                    <Column align="right">
+                      <Text style={hashValue}>
+                        {transactionHash.slice(0, 6)}...{transactionHash.slice(-4)}
+                      </Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+            </Section>
+
+            {/* CTA */}
+            {dashboardUrl && (
+              <Section style={ctaSection}>
+                <Button style={primaryButton} href={dashboardUrl}>
+                  View Earnings Dashboard
+                </Button>
+              </Section>
+            )}
+          </Section>
+
+          {/* Creator Tips */}
+          <Section style={tipsSection}>
+            <Heading style={tipsTitle}>📊 Creator Insights</Heading>
+            <Text style={tipsIntro}>
+              Your art is being appreciated and resold - this is a great sign of collector interest!
+            </Text>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Track all your royalty earnings in the creator dashboard</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Analyze which pieces perform best on the secondary market</Text>
+            </div>
+            <div style={tipItem}>
+              <Text style={tipBullet}>•</Text>
+              <Text style={tipText}>Use these insights to inform future collections</Text>
+            </div>
+          </Section>
+
+          {/* Celebration Note */}
+          <Section style={celebrationSection}>
+            <Text style={celebrationText}>
+              🎨 Congratulations! Your creativity is generating ongoing income.
+            </Text>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you&apos;re the creator of this NFT.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Notifications</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default RoyaltyReceivedEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '15px',
+  margin: '0',
+}
+
+const amountCardSection = {
+  padding: '24px 40px 0',
+}
+
+const amountCard = {
+  background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)',
+  borderRadius: '16px',
+  padding: '32px 24px',
+  textAlign: 'center' as const,
+  border: '1px solid #10b981',
+}
+
+const amountLabel = {
+  color: 'rgba(255, 255, 255, 0.75)',
+  fontSize: '13px',
+  fontWeight: '500',
+  margin: '0 0 8px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '1px',
+}
+
+const amountValue = {
+  color: '#ffffff',
+  fontSize: '42px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-1px',
+}
+
+const amountSubtext = {
+  color: 'rgba(255, 255, 255, 0.75)',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const nftSection = {
+  padding: '28px 40px',
+}
+
+const nftImageColumn = {
+  width: '100px',
+  verticalAlign: 'top',
+}
+
+const nftImageStyle = {
+  width: '80px',
+  height: '80px',
+  borderRadius: '12px',
+  objectFit: 'cover' as const,
+  border: '2px solid #333',
+}
+
+const nftPlaceholder = {
+  width: '80px',
+  height: '80px',
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '2px solid #333',
+}
+
+const nftPlaceholderText = {
+  fontSize: '28px',
+  margin: '0',
+}
+
+const nftInfoColumn = {
+  verticalAlign: 'top',
+  paddingLeft: '8px',
+}
+
+const nftCollection = {
+  color: '#f59e0b',
+  fontSize: '11px',
+  fontWeight: '500',
+  margin: '0 0 4px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const nftTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '700',
+  margin: '0 0 12px',
+}
+
+const soldLabel = {
+  color: '#71717a',
+  fontSize: '11px',
+  fontWeight: '500',
+  margin: '0 0 2px',
+  textTransform: 'uppercase' as const,
+}
+
+const soldPrice = {
+  color: '#10b981',
+  fontSize: '18px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '0 40px 32px',
+}
+
+const detailsCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  border: '1px solid #333',
+}
+
+const detailsTitle = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const detailRow = {
+  padding: '8px 0',
+}
+
+const detailLabel = {
+  color: '#71717a',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const detailValue = {
+  color: '#a1a1aa',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const earningsValue = {
+  color: '#10b981',
+  fontSize: '16px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const hashValue = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  fontFamily: 'monospace',
+  margin: '0',
+}
+
+const detailDivider = {
+  borderColor: '#333',
+  margin: '12px 0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#f59e0b',
+  borderRadius: '10px',
+  color: '#000000',
+  fontSize: '16px',
+  fontWeight: '700',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '16px 48px',
+  border: 'none',
+}
+
+const tipsSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const tipsTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 12px',
+}
+
+const tipsIntro = {
+  color: '#a1a1aa',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0 0 16px',
+}
+
+const tipItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '10px',
+}
+
+const tipBullet = {
+  color: '#f59e0b',
+  fontSize: '14px',
+  margin: '0 10px 0 0',
+}
+
+const tipText = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  lineHeight: '20px',
+  margin: '0',
+}
+
+const celebrationSection = {
+  backgroundColor: 'rgba(139, 92, 246, 0.1)',
+  margin: '24px',
+  borderRadius: '12px',
+  padding: '16px 24px',
+  textAlign: 'center' as const,
+  border: '1px solid rgba(139, 92, 246, 0.2)',
+}
+
+const celebrationText = {
+  color: '#c4b5fd',
+  fontSize: '14px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/nft/whitelist-approved-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface WhitelistApprovedEmailProps {
+  dropName: string
+  spots: number
+  startTime: string
+  mintUrl?: string
+  dropImage?: string
+  pricePerNFT?: number
+}
+
+export const WhitelistApprovedEmail = ({
+  dropName,
+  spots,
+  startTime,
+  mintUrl,
+  dropImage,
+  pricePerNFT,
+}: WhitelistApprovedEmailProps) => {
+  const startDate = new Date(startTime)
+
+  return (
+    <Html>
+      <Head />
+      <Preview>You&apos;re approved for the {dropName} whitelist - {String(spots)} {spots === 1 ? 'spot' : 'spots'} secured!</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          {/* Header */}
+          <Section style={header}>
+            <Row>
+              <Column align="center">
+                <Img
+                  src="https://zuno.market/logo.png"
+                  width="140"
+                  height="40"
+                  alt="Zuno Marketplace"
+                  style={logo}
+                />
+              </Column>
+            </Row>
+          </Section>
+
+          {/* Success Hero */}
+          <Section style={heroSection}>
+            <div style={heroGradient}>
+              <div style={approvedBadge}>
+                <Text style={approvedBadgeText}>✓ APPROVED</Text>
+              </div>
+              <Text style={heroEmoji}>🎊</Text>
+              <Heading style={heroTitle}>Whitelist Approved!</Heading>
+              <Text style={heroSubtitle}>
+                You&apos;ve secured your spot for an exclusive drop
+              </Text>
+            </div>
+          </Section>
+
+          {/* Drop Preview */}
+          {dropImage && (
+            <Section style={imageSection}>
+              <Img
+                src={dropImage}
+                alt={dropName}
+                style={dropImageStyle}
+              />
+            </Section>
+          )}
+
+          {/* Drop Info */}
+          <Section style={dropInfoSection}>
+            <Heading style={dropTitle}>{dropName}</Heading>
+            <div style={spotsBadge}>
+              <Text style={spotsBadgeText}>{spots} {spots === 1 ? 'Spot' : 'Spots'} Secured</Text>
+            </div>
+          </Section>
+
+          {/* Drop Details */}
+          <Section style={contentSection}>
+            <Section style={detailsCard}>
+              <Row style={detailRow}>
+                <Column style={detailIconColumn}>
+                  <Text style={detailIcon}>📅</Text>
+                </Column>
+                <Column>
+                  <Text style={detailLabel}>Drop Date</Text>
+                  <Text style={detailValue}>{startDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column style={detailIconColumn}>
+                  <Text style={detailIcon}>⏰</Text>
+                </Column>
+                <Column>
+                  <Text style={detailLabel}>Time</Text>
+                  <Text style={detailValue}>{startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</Text>
+                </Column>
+              </Row>
+              <Hr style={detailDivider} />
+              <Row style={detailRow}>
+                <Column style={detailIconColumn}>
+                  <Text style={detailIcon}>🎫</Text>
+                </Column>
+                <Column>
+                  <Text style={detailLabel}>Your Allocation</Text>
+                  <Text style={detailValue}>{spots} {spots === 1 ? 'NFT' : 'NFTs'}</Text>
+                </Column>
+              </Row>
+              {pricePerNFT !== undefined && (
+                <>
+                  <Hr style={detailDivider} />
+                  <Row style={detailRow}>
+                    <Column style={detailIconColumn}>
+                      <Text style={detailIcon}>💎</Text>
+                    </Column>
+                    <Column>
+                      <Text style={detailLabel}>Mint Price</Text>
+                      <Text style={priceValue}>{pricePerNFT} ETH</Text>
+                    </Column>
+                  </Row>
+                </>
+              )}
+            </Section>
+
+            {/* CTA */}
+            {mintUrl && (
+              <Section style={ctaSection}>
+                <Button style={primaryButton} href={mintUrl}>
+                  Go to Mint Page
+                </Button>
+                <Text style={ctaSubtext}>
+                  Bookmark this page for quick access
+                </Text>
+              </Section>
+            )}
+          </Section>
+
+          {/* Preparation Checklist */}
+          <Section style={checklistSection}>
+            <Heading style={checklistTitle}>⚡ Preparation Checklist</Heading>
+            <div style={checklistItem}>
+              <div style={checkBox}>
+                <Text style={checkMark}>□</Text>
+              </div>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Connect your wallet</Text>
+                <Text style={checkDesc}>Use the same wallet you applied with</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <div style={checkBox}>
+                <Text style={checkMark}>□</Text>
+              </div>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Fund your wallet</Text>
+                <Text style={checkDesc}>Ensure you have enough ETH + gas fees (~0.01 ETH)</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <div style={checkBox}>
+                <Text style={checkMark}>□</Text>
+              </div>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Set a reminder</Text>
+                <Text style={checkDesc}>Be online 5 minutes before the drop starts</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <div style={checkBox}>
+                <Text style={checkMark}>□</Text>
+              </div>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Have the mint page open</Text>
+                <Text style={checkDesc}>Don&apos;t wait until the last second</Text>
+              </div>
+            </div>
+            <div style={checklistItem}>
+              <div style={checkBox}>
+                <Text style={checkMark}>□</Text>
+              </div>
+              <div style={checkContent}>
+                <Text style={checkLabel}>Check gas settings</Text>
+                <Text style={checkDesc}>Use recommended gas for fast transactions</Text>
+              </div>
+            </div>
+          </Section>
+
+          {/* Important Warning */}
+          <Section style={warningSection}>
+            <Text style={warningIcon}>⚠️</Text>
+            <Text style={warningTitle}>Important</Text>
+            <Text style={warningText}>
+              Whitelist spots are guaranteed but don&apos;t reserve indefinitely. 
+              Mint promptly when the drop goes live! We&apos;ll send you a reminder notification before it starts.
+            </Text>
+          </Section>
+
+          <Hr style={divider} />
+
+          {/* Footer */}
+          <Section style={footer}>
+            <Row>
+              <Column align="center">
+                <Text style={footerBrand}>Zuno Marketplace</Text>
+                <Row style={socialRow}>
+                  <Column align="center">
+                    <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                    <Text style={socialDivider}>•</Text>
+                    <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                  </Column>
+                </Row>
+                <Text style={footerNote}>
+                  You&apos;re receiving this because you applied for this drop&apos;s whitelist.
+                </Text>
+                <Text style={footerLinks}>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Manage Notifications</Link>
+                  <Text style={footerDot}>•</Text>
+                  <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+                </Text>
+              </Column>
+            </Row>
+          </Section>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
+
+export default WhitelistApprovedEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%)',
+  borderRadius: '16px',
+  padding: '40px 32px',
+  textAlign: 'center' as const,
+}
+
+const approvedBadge = {
+  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  borderRadius: '20px',
+  padding: '6px 16px',
+  display: 'inline-block',
+  marginBottom: '16px',
+}
+
+const approvedBadgeText = {
+  color: '#ffffff',
+  fontSize: '11px',
+  fontWeight: '700',
+  margin: '0',
+  letterSpacing: '1px',
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 12px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '15px',
+  margin: '0',
+}
+
+const imageSection = {
+  padding: '24px 40px 0',
+}
+
+const dropImageStyle = {
+  width: '100%',
+  height: 'auto',
+  borderRadius: '12px',
+  border: '2px solid #333',
+}
+
+const dropInfoSection = {
+  padding: '24px 40px 0',
+  textAlign: 'center' as const,
+}
+
+const dropTitle = {
+  color: '#ffffff',
+  fontSize: '22px',
+  fontWeight: '700',
+  margin: '0 0 16px',
+}
+
+const spotsBadge = {
+  backgroundColor: 'rgba(139, 92, 246, 0.15)',
+  borderRadius: '24px',
+  padding: '10px 24px',
+  display: 'inline-block',
+  border: '1px solid rgba(139, 92, 246, 0.3)',
+}
+
+const spotsBadgeText = {
+  color: '#a78bfa',
+  fontSize: '16px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '28px 40px',
+}
+
+const detailsCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  marginBottom: '28px',
+  border: '1px solid #333',
+}
+
+const detailRow = {
+  padding: '8px 0',
+}
+
+const detailIconColumn = {
+  width: '44px',
+}
+
+const detailIcon = {
+  fontSize: '20px',
+  margin: '0',
+}
+
+const detailLabel = {
+  color: '#71717a',
+  fontSize: '12px',
+  fontWeight: '500',
+  margin: '0 0 2px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const detailValue = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0',
+}
+
+const priceValue = {
+  color: '#a78bfa',
+  fontSize: '18px',
+  fontWeight: '700',
+  margin: '0',
+}
+
+const detailDivider = {
+  borderColor: '#333',
+  margin: '12px 0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+}
+
+const primaryButton = {
+  backgroundColor: '#8b5cf6',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '16px 48px',
+  border: 'none',
+}
+
+const ctaSubtext = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '16px 0 0',
+}
+
+const checklistSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  border: '1px solid #333',
+}
+
+const checklistTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 20px',
+}
+
+const checklistItem = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  marginBottom: '16px',
+}
+
+const checkBox = {
+  width: '24px',
+  height: '24px',
+  marginRight: '12px',
+  flexShrink: 0,
+}
+
+const checkMark = {
+  color: '#8b5cf6',
+  fontSize: '18px',
+  margin: '0',
+}
+
+const checkContent = {
+  flex: 1,
+}
+
+const checkLabel = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 2px',
+}
+
+const checkDesc = {
+  color: '#71717a',
+  fontSize: '13px',
+  margin: '0',
+}
+
+const warningSection = {
+  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+  margin: '24px',
+  borderRadius: '12px',
+  padding: '20px 24px',
+  textAlign: 'center' as const,
+  border: '1px solid rgba(239, 68, 68, 0.2)',
+}
+
+const warningIcon = {
+  fontSize: '24px',
+  margin: '0 0 8px',
+}
+
+const warningTitle = {
+  color: '#fca5a5',
+  fontSize: '14px',
+  fontWeight: '700',
+  margin: '0 0 8px',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.5px',
+}
+
+const warningText = {
+  color: '#fca5a5',
+  fontSize: '13px',
+  lineHeight: '22px',
+  margin: '0',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerNote = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
+<file path="src/emails/welcome-email.tsx">
+import {
+  Body,
+  Button,
+  Column,
+  Container,
+  Head,
+  Heading,
+  Hr,
+  Html,
+  Img,
+  Link,
+  Preview,
+  Row,
+  Section,
+  Text,
+} from '@react-email/components'
+
+interface WelcomeEmailProps {
+  userName?: string
+  organizationName?: string
+}
+
+export const WelcomeEmail = ({
+  userName = 'User',
+  organizationName = 'Zuno Marketplace',
+}: WelcomeEmailProps) => (
+  <Html>
+    <Head />
+    <Preview>Welcome to {organizationName} - Your journey into NFTs starts here!</Preview>
+    <Body style={main}>
+      <Container style={container}>
+        {/* Header */}
+        <Section style={header}>
+          <Row>
+            <Column align="center">
+              <Img
+                src="https://zuno.market/logo.png"
+                width="140"
+                height="40"
+                alt={organizationName}
+                style={logo}
+              />
+            </Column>
+          </Row>
+        </Section>
+
+        {/* Hero Section */}
+        <Section style={heroSection}>
+          <div style={heroGradient}>
+            <Text style={heroEmoji}>🎉</Text>
+            <Heading style={heroTitle}>Welcome to {organizationName}!</Heading>
+            <Text style={heroSubtitle}>
+              Your gateway to discover, collect, and trade unique digital assets
+            </Text>
+          </div>
+        </Section>
+
+        {/* Content */}
+        <Section style={contentSection}>
+          <Text style={greeting}>Hi {userName},</Text>
+          <Text style={paragraph}>
+            We're thrilled to have you join our community of collectors, creators, and NFT enthusiasts. 
+            You've just taken the first step into the exciting world of digital ownership.
+          </Text>
+
+          {/* Features Grid */}
+          <Section style={featuresSection}>
+            <Heading style={featuresTitle}>What you can do</Heading>
+            <Row style={featureRow}>
+              <Column style={featureColumn}>
+                <div style={featureCard}>
+                  <Text style={featureIcon}>🖼️</Text>
+                  <Text style={featureLabel}>Discover</Text>
+                  <Text style={featureDesc}>Browse thousands of unique NFTs</Text>
+                </div>
+              </Column>
+              <Column style={featureColumn}>
+                <div style={featureCard}>
+                  <Text style={featureIcon}>💎</Text>
+                  <Text style={featureLabel}>Collect</Text>
+                  <Text style={featureDesc}>Build your digital collection</Text>
+                </div>
+              </Column>
+            </Row>
+            <Row style={featureRow}>
+              <Column style={featureColumn}>
+                <div style={featureCard}>
+                  <Text style={featureIcon}>🔨</Text>
+                  <Text style={featureLabel}>Auction</Text>
+                  <Text style={featureDesc}>Bid on exclusive drops</Text>
+                </div>
+              </Column>
+              <Column style={featureColumn}>
+                <div style={featureCard}>
+                  <Text style={featureIcon}>🚀</Text>
+                  <Text style={featureLabel}>Create</Text>
+                  <Text style={featureDesc}>Mint and sell your art</Text>
+                </div>
+              </Column>
+            </Row>
+          </Section>
+
+          {/* CTA */}
+          <Section style={ctaSection}>
+            <Button style={primaryButton} href="https://zuno.market/explore">
+              Start Exploring
+            </Button>
+            <Text style={ctaSubtext}>
+              or <Link href="https://zuno.market/create" style={ctaLink}>create your first NFT</Link>
+            </Text>
+          </Section>
+        </Section>
+
+        {/* Help Section */}
+        <Section style={helpSection}>
+          <Heading style={helpTitle}>Need help getting started?</Heading>
+          <Text style={helpText}>
+            Check out our <Link href="https://zuno.market/guides" style={helpLink}>beginner's guide</Link> or 
+            reach out to our <Link href="https://zuno.market/support" style={helpLink}>support team</Link>.
+          </Text>
+        </Section>
+
+        <Hr style={divider} />
+
+        {/* Footer */}
+        <Section style={footer}>
+          <Row>
+            <Column align="center">
+              <Text style={footerBrand}>{organizationName}</Text>
+              <Row style={socialRow}>
+                <Column align="center">
+                  <Link href="https://twitter.com/zunomarket" style={socialLink}>Twitter</Link>
+                  <Text style={socialDivider}>•</Text>
+                  <Link href="https://discord.gg/zuno" style={socialLink}>Discord</Link>
+                  <Text style={socialDivider}>•</Text>
+                  <Link href="https://instagram.com/zunomarket" style={socialLink}>Instagram</Link>
+                </Column>
+              </Row>
+              <Text style={footerText}>
+                © 2025 {organizationName}. All rights reserved.
+              </Text>
+              <Text style={footerLinks}>
+                <Link href="https://zuno.market/privacy" style={footerLink}>Privacy Policy</Link>
+                <Text style={footerDot}>•</Text>
+                <Link href="https://zuno.market/terms" style={footerLink}>Terms of Service</Link>
+                <Text style={footerDot}>•</Text>
+                <Link href="https://zuno.market/settings/notifications" style={footerLink}>Unsubscribe</Link>
+              </Text>
+            </Column>
+          </Row>
+        </Section>
+      </Container>
+    </Body>
+  </Html>
+)
+
+export default WelcomeEmail
+
+const main = {
+  backgroundColor: '#0f0f0f',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Ubuntu, sans-serif',
+}
+
+const container = {
+  backgroundColor: '#1a1a1a',
+  margin: '0 auto',
+  maxWidth: '600px',
+  borderRadius: '16px',
+  overflow: 'hidden',
+  marginTop: '40px',
+  marginBottom: '40px',
+  border: '1px solid #2a2a2a',
+}
+
+const header = {
+  padding: '32px 40px 24px',
+  backgroundColor: '#1a1a1a',
+}
+
+const logo = {
+  margin: '0 auto',
+}
+
+const heroSection = {
+  padding: '0 24px',
+}
+
+const heroGradient = {
+  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%)',
+  borderRadius: '16px',
+  padding: '48px 32px',
+  textAlign: 'center' as const,
+}
+
+const heroEmoji = {
+  fontSize: '48px',
+  margin: '0 0 16px',
+}
+
+const heroTitle = {
+  color: '#ffffff',
+  fontSize: '28px',
+  fontWeight: '700',
+  margin: '0 0 12px',
+  letterSpacing: '-0.5px',
+}
+
+const heroSubtitle = {
+  color: 'rgba(255, 255, 255, 0.85)',
+  fontSize: '16px',
+  lineHeight: '24px',
+  margin: '0',
+}
+
+const contentSection = {
+  padding: '40px',
+}
+
+const greeting = {
+  color: '#ffffff',
+  fontSize: '18px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+}
+
+const paragraph = {
+  color: '#a1a1aa',
+  fontSize: '15px',
+  lineHeight: '26px',
+  margin: '0 0 32px',
+}
+
+const featuresSection = {
+  marginBottom: '32px',
+}
+
+const featuresTitle = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 20px',
+  textAlign: 'center' as const,
+}
+
+const featureRow = {
+  marginBottom: '12px',
+}
+
+const featureColumn = {
+  width: '50%',
+  padding: '0 6px',
+}
+
+const featureCard = {
+  backgroundColor: '#252525',
+  borderRadius: '12px',
+  padding: '20px 16px',
+  textAlign: 'center' as const,
+  border: '1px solid #333',
+}
+
+const featureIcon = {
+  fontSize: '24px',
+  margin: '0 0 8px',
+}
+
+const featureLabel = {
+  color: '#ffffff',
+  fontSize: '14px',
+  fontWeight: '600',
+  margin: '0 0 4px',
+}
+
+const featureDesc = {
+  color: '#71717a',
+  fontSize: '12px',
+  lineHeight: '18px',
+  margin: '0',
+}
+
+const ctaSection = {
+  textAlign: 'center' as const,
+  padding: '8px 0',
+}
+
+const primaryButton = {
+  backgroundColor: '#6366f1',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'inline-block',
+  padding: '14px 40px',
+  border: 'none',
+}
+
+const ctaSubtext = {
+  color: '#71717a',
+  fontSize: '14px',
+  margin: '16px 0 0',
+}
+
+const ctaLink = {
+  color: '#a78bfa',
+  textDecoration: 'underline',
+}
+
+const helpSection = {
+  backgroundColor: '#252525',
+  margin: '0 24px 24px',
+  borderRadius: '12px',
+  padding: '24px',
+  textAlign: 'center' as const,
+  border: '1px solid #333',
+}
+
+const helpTitle = {
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
+  margin: '0 0 8px',
+}
+
+const helpText = {
+  color: '#a1a1aa',
+  fontSize: '14px',
+  lineHeight: '22px',
+  margin: '0',
+}
+
+const helpLink = {
+  color: '#a78bfa',
+  textDecoration: 'underline',
+}
+
+const divider = {
+  borderColor: '#2a2a2a',
+  margin: '0',
+}
+
+const footer = {
+  padding: '32px 40px',
+  backgroundColor: '#141414',
+}
+
+const footerBrand = {
+  color: '#ffffff',
+  fontSize: '16px',
+  fontWeight: '600',
+  margin: '0 0 16px',
+  textAlign: 'center' as const,
+}
+
+const socialRow = {
+  marginBottom: '16px',
+}
+
+const socialLink = {
+  color: '#a1a1aa',
+  fontSize: '13px',
+  textDecoration: 'none',
+}
+
+const socialDivider = {
+  color: '#404040',
+  fontSize: '13px',
+  margin: '0 12px',
+  display: 'inline',
+}
+
+const footerText = {
+  color: '#52525b',
+  fontSize: '12px',
+  lineHeight: '20px',
+  margin: '0 0 12px',
+  textAlign: 'center' as const,
+}
+
+const footerLinks = {
+  margin: '0',
+  textAlign: 'center' as const,
+}
+
+const footerLink = {
+  color: '#71717a',
+  fontSize: '12px',
+  textDecoration: 'none',
+}
+
+const footerDot = {
+  color: '#404040',
+  fontSize: '12px',
+  margin: '0 8px',
+  display: 'inline',
+}
+</file>
+
 <file path="src/infrastructure/channels/channel.interface.ts">
 import { Channel } from '@/infrastructure/database/prisma'
 
@@ -16245,6 +18682,81 @@ export class RetryWorker {
     }
   }
 }
+</file>
+
+<file path="eslint.config.mjs">
+import js from '@eslint/js'
+import typescript from '@typescript-eslint/eslint-plugin'
+import tsParser from '@typescript-eslint/parser'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooksPlugin from 'eslint-plugin-react-hooks'
+import globals from 'globals'
+
+export default [
+  js.configs.recommended,
+  {
+    files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}'],
+    plugins: {
+      '@typescript-eslint': typescript,
+      react: reactPlugin,
+      'react-hooks': reactHooksPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+        ...globals.es2021,
+        // React globals
+        React: 'writable',
+        JSX: 'writable',
+        // Jest globals
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        jest: 'readonly',
+      },
+    },
+    rules: {
+      // Disable base rule in favor of TypeScript version
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-undef': 'off', // TypeScript handles this
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+    },
+  },
+  {
+    ignores: [
+      '.claude/**',
+      '.next/**',
+      'node_modules/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '**/*.config.js',
+      '**/*.config.mjs',
+      'src/infrastructure/database/generated/**',
+    ],
+  },
+]
 </file>
 
 <file path="src/core/use-cases/notifications/send-notification.use-case.ts">
@@ -17384,7 +19896,8 @@ export const env = validateEnv()
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "docker:clean": "docker-compose down -v"
+    "docker:clean": "docker-compose down -v",
+    "email:dev": "email dev --dir src/components/emails --port 3001"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -17425,6 +19938,7 @@ export const env = validateEnv()
     "@auth/prisma-adapter": "^2.11.1",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
+    "@react-email/preview-server": "^4.3.2",
     "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/vite": "^4.1.17",
     "@testing-library/jest-dom": "^6.6.3",
