@@ -2,21 +2,15 @@
 
 This document provides a high-level overview of the codebase.
 
-## Recent Changes (Phase 03: Email Gmail Compatibility - Template Migration)
+## Recent Changes (Phase 04: Email Gmail Compatibility - Integration & Cleanup)
 
-- **Email Templates:** 8 Gmail-compatible email templates have been migrated to use a consistent Row/Column layout.
-- **Styling:** Gradients in email templates have been replaced with solid colors for broader email client compatibility.
-- **Affected Files:**
-    - `src/components/emails/welcome-email.tsx`
-    - `src/components/emails/auction-won-email.tsx`
-    - `src/components/emails/nft/auction-outbid-email.tsx`
-    - `src/components/emails/nft/drop-announcement-email.tsx`
-    - `src/components/emails/nft/floor-price-drop-email.tsx`
-    - `src/components/emails/nft/mint-success-email.tsx`
-    - `src/components/emails/nft/royalty-received-email.tsx`
-    - `src/components/emails/nft/whitelist-approved-email.tsx`
-    - `src/components/emails/preview/*.tsx` (8 preview files)
-    - `src/components/emails/common/email-footer.tsx` (fixed nested p tag)
+- **Email Templates Location:** All email templates have been successfully migrated from `src/emails/` to `src/components/emails/`.
+- **New Structure:**
+    - Common email components are now located in `src/components/emails/common/`.
+    - NFT-specific email templates are in `src/components/emails/nft/`.
+    - Email preview files are found in `src/components/emails/preview/`.
+- **Deleted Folder:** The old `src/emails/` directory and its contents have been removed.
+- **Affected File:** `src/infrastructure/templates/template.service.ts` has been updated to reflect the new import paths for email templates.
 
 ## Further Details
 
