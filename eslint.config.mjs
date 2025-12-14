@@ -58,6 +58,7 @@ export default [
   },
   {
     ignores: [
+      '.claude/**',
       '.next/**',
       'node_modules/**',
       'dist/**',
