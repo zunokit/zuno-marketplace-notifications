@@ -1,7 +1,17 @@
+import 'dotenv/config'
 /* eslint-disable no-console */
+import { hashPassword } from 'better-auth/crypto'
 import { PrismaClient } from '@/infrastructure/database/prisma'
 
 const prisma = new PrismaClient()
+
+function getApiKeysFromEnv(): string[] {
+  const apiKeysEnv = process.env.API_KEYS || ''
+  return apiKeysEnv
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean)
+}
 
 async function main() {
   console.log('🌱 Seeding database...')
@@ -110,6 +120,55 @@ async function main() {
     },
   })
   console.log('✓ Created rate limit config')
+
+  // Seed API keys from environment variable
+  const apiKeys = getApiKeysFromEnv()
+  if (apiKeys.length > 0) {
+    console.log(`🔑 Seeding ${apiKeys.length} API key(s)...`)
+
+    for (let i = 0; i < apiKeys.length; i++) {
+      const apiKey = apiKeys[i]
+      const keyPrefix = apiKey.substring(0, 8)
+      const keyHash = await hashPassword(apiKey)
+      const keyName = `Seeded API Key ${i + 1}`
+
+      // Check if API key with this prefix already exists
+      const existingKey = await prisma.apiKey.findFirst({
+        where: { keyPrefix },
+      })
+
+      if (existingKey) {
+        // Update the existing key hash
+        await prisma.apiKey.update({
+          where: { id: existingKey.id },
+          data: {
+            keyHash,
+            isActive: true,
+            revokedAt: null,
+            revokedBy: null,
+          },
+        })
+        console.log(`✓ Updated API key: ${keyPrefix}...`)
+      } else {
+        await prisma.apiKey.create({
+          data: {
+            name: keyName,
+            keyHash,
+            keyPrefix,
+            scopes: ['*'], // Full access
+            isActive: true,
+            createdBy: user.id,
+            organization: {
+              connect: { id: org.id },
+            },
+          },
+        })
+        console.log(`✓ Created API key: ${keyPrefix}...`)
+      }
+    }
+  } else {
+    console.log('ℹ No API_KEYS environment variable set, skipping API key seeding')
+  }
 
   console.log('✨ Seed completed successfully!')
 }

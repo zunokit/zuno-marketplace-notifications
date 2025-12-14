@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import bcrypt from 'bcryptjs'
+import { verifyPassword } from 'better-auth/crypto'
 import { prisma } from '@/infrastructure/database/prisma'
 import { logger } from '@/lib/logger/logger'
 
@@ -67,7 +67,7 @@ export async function authenticateApiKey(
     // Check hash for each matching key
     let matchedKey = null
     for (const key of storedKeys) {
-      const isMatch = await bcrypt.compare(apiKey, key.keyHash)
+      const isMatch = await verifyPassword({ hash: key.keyHash, password: apiKey })
       if (isMatch) {
         matchedKey = key
         break
