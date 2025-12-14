@@ -1,28 +1,23 @@
 # Codebase Summary
 
-This document provides a high-level overview of the codebase, with a focus on recently added or modified components.
+This document provides a high-level overview of the codebase.
 
-## Email Gmail Compatibility - Phase 02: Shared Components
+## Recent Changes (Phase 03: Email Gmail Compatibility - Template Migration)
 
-New shared email components have been introduced to enhance Gmail compatibility and streamline email templating. These components are designed for reusability across various email types.
+- **Email Templates:** 8 Gmail-compatible email templates have been migrated to use a consistent Row/Column layout.
+- **Styling:** Gradients in email templates have been replaced with solid colors for broader email client compatibility.
+- **Affected Files:**
+    - `src/components/emails/welcome-email.tsx`
+    - `src/components/emails/auction-won-email.tsx`
+    - `src/components/emails/nft/auction-outbid-email.tsx`
+    - `src/components/emails/nft/drop-announcement-email.tsx`
+    - `src/components/emails/nft/floor-price-drop-email.tsx`
+    - `src/components/emails/nft/mint-success-email.tsx`
+    - `src/components/emails/nft/royalty-received-email.tsx`
+    - `src/components/emails/nft/whitelist-approved-email.tsx`
+    - `src/components/emails/preview/*.tsx` (8 preview files)
+    - `src/components/emails/common/email-footer.tsx` (fixed nested p tag)
 
-### Components:
-- **EmailHeader**: Standardized header for all emails.
-- **HeroSection**: A prominent section typically used for key messages or calls to action.
-- **EmailButton**: Reusable button component for consistent styling and functionality.
-- **EmailFooter**: Standardized footer for all emails, including legal disclaimers and contact information.
-- **FeatureCard**: Component for showcasing individual features or highlights within an email.
+## Further Details
 
-### Usage:
-These components can be imported from `src/components/emails/common`.
-
-### Files Created:
-- `src/components/emails/common/email-header.tsx`
-- `src/components/emails/common/hero-section.tsx`
-- `src/components/emails/common/email-button.tsx`
-- `src/components/emails/common/email-footer.tsx`
-- `src/components/emails/common/feature-card.tsx`
-- `src/components/emails/common/index.ts` (barrel export)
-- `src/components/emails/test-components-email.tsx` (test email for shared components)
-
-This summary will be expanded as more codebase changes occur.
+For a detailed breakdown of the codebase, refer to the `repomix-output.xml` file located at `E:\zuno-marketplace-notifications\repomix-output.xml`.

@@ -7,7 +7,7 @@
 
 ## Overview
 - **Priority**: High
-- **Status**: Pending
+- **Status**: Completed (2025-12-15)
 - **Description**: Migrate all 8 email templates to new location with Gmail-compatible styles
 
 ## Key Insights
@@ -146,24 +146,24 @@ flex: ...,
 ```
 
 ## Todo List
-- [ ] Migrate `welcome-email.tsx`
-- [ ] Migrate `auction-won-email.tsx`
-- [ ] Migrate `auction-outbid-email.tsx`
-- [ ] Migrate `drop-announcement-email.tsx`
-- [ ] Migrate `floor-price-drop-email.tsx`
-- [ ] Migrate `mint-success-email.tsx`
-- [ ] Migrate `royalty-received-email.tsx`
-- [ ] Migrate `whitelist-approved-email.tsx`
-- [ ] Verify all templates in React Email preview
+- [x] Migrate `welcome-email.tsx`
+- [x] Migrate `auction-won-email.tsx`
+- [x] Migrate `auction-outbid-email.tsx`
+- [x] Migrate `drop-announcement-email.tsx`
+- [x] Migrate `floor-price-drop-email.tsx`
+- [x] Migrate `mint-success-email.tsx`
+- [x] Migrate `royalty-received-email.tsx`
+- [x] Migrate `whitelist-approved-email.tsx`
+- [x] Verify all templates in React Email preview
 - [ ] Test render in Gmail (send test email)
 
 ## Success Criteria
-- [ ] All 8 templates in new location
-- [ ] No `display: flex` in any template
-- [ ] No `alignItems` or `justifyContent` properties
-- [ ] No `linear-gradient` (solid colors only)
-- [ ] All templates render in React Email CLI
-- [ ] TypeScript compilation passes
+- [x] All 8 templates in new location
+- [x] No `display: flex` in any template
+- [x] No `alignItems` or `justifyContent` properties
+- [x] No `linear-gradient` (solid colors only)
+- [x] All templates render in React Email CLI
+- [x] TypeScript compilation passes
 
 ## Risk Assessment
 | Risk | Impact | Mitigation |

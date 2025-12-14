@@ -39,11 +39,11 @@ export const EmailFooter = ({
             <Link href="https://zuno.market/privacy" style={footerLink}>
               Privacy Policy
             </Link>
-            <Text style={footerDot}>•</Text>
+            <span style={footerDot}>•</span>
             <Link href="https://zuno.market/terms" style={footerLink}>
               Terms of Service
             </Link>
-            <Text style={footerDot}>•</Text>
+            <span style={footerDot}>•</span>
             <Link
               href="https://zuno.market/settings/notifications"
               style={footerLink}
