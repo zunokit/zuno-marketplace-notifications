@@ -23,7 +23,8 @@
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
     "docker:logs": "docker-compose logs -f",
-    "docker:clean": "docker-compose down -v"
+    "docker:clean": "docker-compose down -v",
+    "email:dev": "email dev --dir src/components/emails --port 3001"
   },
   "dependencies": {
     "@auth/core": "^0.34.3",
@@ -64,6 +65,7 @@
     "@auth/prisma-adapter": "^2.11.1",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
+    "@react-email/preview-server": "^4.3.2",
     "@tailwindcss/postcss": "^4.1.17",
     "@tailwindcss/vite": "^4.1.17",
     "@testing-library/jest-dom": "^6.6.3",
