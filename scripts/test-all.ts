@@ -6,6 +6,7 @@
  * Run: npx tsx scripts/test-all.ts
  */
 
+import 'dotenv/config'
 import { execSync } from 'child_process'
 import path from 'path'
 

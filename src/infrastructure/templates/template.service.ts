@@ -5,14 +5,14 @@ import * as React from 'react'
 import { prisma } from '@/infrastructure/database/prisma'
 
 // React Email templates
-import WelcomeEmail from '@/emails/welcome-email'
-import AuctionWonEmail from '@/emails/auction-won-email'
-import AuctionOutbidEmail from '@/emails/nft/auction-outbid-email'
-import DropAnnouncementEmail from '@/emails/nft/drop-announcement-email'
-import FloorPriceDropEmail from '@/emails/nft/floor-price-drop-email'
-import MintSuccessEmail from '@/emails/nft/mint-success-email'
-import RoyaltyReceivedEmail from '@/emails/nft/royalty-received-email'
-import WhitelistApprovedEmail from '@/emails/nft/whitelist-approved-email'
+import WelcomeEmail from '@/components/emails/welcome-email'
+import AuctionWonEmail from '@/components/emails/auction-won-email'
+import AuctionOutbidEmail from '@/components/emails/nft/auction-outbid-email'
+import DropAnnouncementEmail from '@/components/emails/nft/drop-announcement-email'
+import FloorPriceDropEmail from '@/components/emails/nft/floor-price-drop-email'
+import MintSuccessEmail from '@/components/emails/nft/mint-success-email'
+import RoyaltyReceivedEmail from '@/components/emails/nft/royalty-received-email'
+import WhitelistApprovedEmail from '@/components/emails/nft/whitelist-approved-email'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ReactEmailComponent = React.FC<any>
