@@ -1,0 +1,27 @@
+# Development Dockerfile for zuno-marketplace-notifications.
+# Used by the optional `app` service in docker-compose.yml.
+# Not for production. For prod, build a multi-stage `Dockerfile` from `next build` output.
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install pnpm via corepack (uses packageManager field from package.json)
+RUN corepack enable && corepack prepare pnpm@10.19.0 --activate
+
+# System deps: openssl is required by Prisma; bash for migrate scripts
+RUN apk add --no-cache bash openssl
+
+# Install deps first (better layer caching)
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+# Copy source
+COPY . .
+
+# Generate Prisma client (uses the schema in src/infrastructure/database/prisma)
+RUN pnpm db:generate || true
+
+EXPOSE 3000
+
+CMD ["pnpm", "dev"]
