@@ -1,9 +1,38 @@
-version: '3.8'
+# Local development infrastructure for zuno-marketplace-notifications.
+#
+# Brings up Postgres, Redis, and Mailpit so the app can run with the values
+# documented in `.env.example`. The Next.js app itself stays on host for fast
+# HMR; uncomment the `app` service block if you want a fully containerised dev.
+#
+# Usage:
+#   docker compose up -d            # start
+#   docker compose down             # stop
+#   docker compose down -v          # stop and wipe volumes
+#   docker compose logs -f          # follow logs
 
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: notifications-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zuno_user
+      POSTGRES_PASSWORD: zuno_pass
+      POSTGRES_DB: zuno_notifications
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zuno_user -d zuno_notifications"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   redis:
     image: redis:7-alpine
     container_name: notifications-redis
+    restart: unless-stopped
     ports:
       - "6379:6379"
     volumes:
@@ -17,6 +46,7 @@ services:
   mailpit:
     image: axllent/mailpit:latest
     container_name: notifications-mailpit
+    restart: unless-stopped
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
@@ -24,5 +54,33 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
+  # Optional: run the Next.js app in Docker too. Disabled by default because
+  # host-mode HMR is faster. Uncomment to use.
+  #
+  # app:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.dev
+  #   container_name: notifications-app
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     DATABASE_URL: postgresql://zuno_user:zuno_pass@postgres:5432/zuno_notifications
+  #     REDIS_URL: redis://redis:6379
+  #     MAILPIT_SMTP_HOST: mailpit
+  #     MAILPIT_SMTP_PORT: "1025"
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules
+  #     - /app/.next
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #     mailpit:
+  #       condition: service_started
+
 volumes:
+  postgres_data:
   redis_data:

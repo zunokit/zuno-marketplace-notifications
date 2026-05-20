@@ -44,7 +44,7 @@ pnpm install
 cp .env.example .env.local
 # Edit .env.local with your credentials
 
-# Start Docker services (PostgreSQL, Redis, Mailpit)
+# Start Docker services (PostgreSQL on :5436, Redis on :6379, Mailpit on :1025/:8025)
 pnpm docker:up
 
 # Run database migrations
@@ -55,9 +55,6 @@ pnpm db:seed
 
 # Start development server
 pnpm dev
-
-# In separate terminal, start workers
-pnpm workers
 ```
 
 Visit **http://localhost:3000**
