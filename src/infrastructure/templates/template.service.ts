@@ -13,6 +13,7 @@ import FloorPriceDropEmail from '@/components/emails/nft/floor-price-drop-email'
 import MintSuccessEmail from '@/components/emails/nft/mint-success-email'
 import RoyaltyReceivedEmail from '@/components/emails/nft/royalty-received-email'
 import WhitelistApprovedEmail from '@/components/emails/nft/whitelist-approved-email'
+import ListingSoldEmail from '@/components/emails/nft/listing-sold-email'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ReactEmailComponent = React.FC<any>
@@ -30,6 +31,7 @@ export class TemplateService {
     this.templates.set('mint-success-email', MintSuccessEmail)
     this.templates.set('royalty-received-email', RoyaltyReceivedEmail)
     this.templates.set('whitelist-approved-email', WhitelistApprovedEmail)
+    this.templates.set('listing-sold-email', ListingSoldEmail)
   }
 
   /**
