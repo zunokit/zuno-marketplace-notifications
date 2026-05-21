@@ -73,9 +73,7 @@ export const ListingSoldEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>
-        Sold! {nftName} just sold for {salePrice} {currency}.
-      </Preview>
+      <Preview>{`Sold! ${nftName} just sold for ${salePrice} ${currency}.`}</Preview>
       <Body style={main}>
         <Container style={container}>
           <EmailHeader />
